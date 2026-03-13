@@ -1,0 +1,140 @@
+.projectsContainer {
+    position: relative;
+    padding-top: 7rem;
+    padding-bottom: 7rem;
+    background: transparent;
+}
+
+.headerContainer {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.projectsEyebrow {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-cyan);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.projectsEyebrowLine {
+    display: block;
+    width: 1.75rem;
+    height: 1px;
+    background-color: var(--color-cyan);
+}
+
+.projectsEyebrowNumber {
+    color: var(--color-muted);
+}
+
+.projectsTitle {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2rem, 5vw, 3.8rem);
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+}
+
+.projectRow {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+}
+
+.projectRow:hover {
+    background: rgba(0, 240, 255, 0.04);
+}
+
+.projectNumber {
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    font-family: monospace;
+    flex-shrink: 0;
+    width: 2.5rem;
+}
+
+.projectInfo {
+    flex: 1 1 0%;
+    min-width: 0;
+}
+
+.projectTitle {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.2rem, 3vw, 2rem);
+    transition: color 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.projectRow:hover .projectTitle {
+    color: var(--color-cyan);
+}
+
+.projectDesc {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+    margin-top: 0.125rem;
+    display: none;
+}
+
+@media (min-width: 640px) {
+    .projectDesc {
+        display: block;
+    }
+}
+
+.tagsContainer {
+    display: none;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    max-width: 17.5rem;
+}
+
+@media (min-width: 768px) {
+    .tagsContainer {
+        display: flex;
+    }
+}
+
+.projectTag {
+    font-size: 0.63rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    color: var(--color-muted);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.projectArrow {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    color: var(--color-muted);
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.projectRow:hover .projectArrow {
+    color: var(--color-cyan);
+    transform: translate(0.25rem, -0.25rem);
+}
+
+.finalBorder {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}

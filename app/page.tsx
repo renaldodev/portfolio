@@ -1,66 +1,79 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+
+import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+import SmoothScroll from '@/components/providers/SmoothScroll';
+import CustomCursor from '@/components/ui/CustomCursor';
+import Loader from '@/components/ui/Loader';
+import Nav from '@/components/ui/Nav';
+import HeroSection from '@/components/sections/HeroSection';
+import AboutSection from '@/components/sections/AboutSection';
+import SkillsSection from '@/components/sections/SkillsSection';
+import ProjectsSection from '@/components/sections/ProjectsSection';
+import TimelineSection from '@/components/sections/TimelineSection';
+import ContactSection from '@/components/sections/ContactSection';
+import styles from './page.module.css';
+
+/**
+ * Load ChessScene with next/dynamic (SSR=false).
+ * This avoids SSR issues and ensures the module is only loaded once.
+ * Critically: we never conditionally unmount this component once mounted,
+ * which would destroy the WebGL context.
+ */
+const ChessScene = dynamic(() => import('@/components/3d/ChessScene'), {
+  ssr: false,
+  loading: () => null,
+});
 
 export default function Home() {
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.style.background = '#050509';
+    document.body.style.background = '#050509';
+  }, []);
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="relative min-h-screen w-full bg-[#050509]">
+      {/* Loader */}
+      {!loaded && <Loader onComplete={() => setLoaded(true)} />}
+
+      {/*
+        Fixed 3D canvas — ALWAYS in the DOM once we first render.
+        We hide it with opacity while loading to prevent flash,
+        but we NEVER unmount it (that would destroy the WebGL context).
+        The canvas itself uses position:absolute inset-0 to fill this wrapper.
+      */}
+      <div
+        className="fixed inset-0 z-0 pointer-events-none overflow-hidden"
+        style={{
+          opacity: loaded ? 1 : 0,
+          transition: 'opacity 0.6s ease',
+        }}
+      >
+        <ChessScene />
+      </div>
+
+      <SmoothScroll>
+        <CustomCursor />
+        <Nav />
+
+        <main className="relative z-10">
+          <HeroSection />
+          <AboutSection />
+          <SkillsSection />
+          <ProjectsSection />
+          <TimelineSection />
+          <ContactSection />
+        </main>
+
+        <footer className={styles.appFooter}>
+          <span>© 2024 Renaldo. All rights reserved.</span>
+          <span className={styles.footerBuiltWith}>
+            Built with <span className={styles.footerIcon}>♔</span> Next.js · Three.js · GSAP
+          </span>
+        </footer>
+      </SmoothScroll>
     </div>
   );
 }

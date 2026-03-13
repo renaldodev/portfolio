@@ -1,0 +1,48 @@
+.navContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+}
+
+.logo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(0.9rem, 2vw, 1.1rem);
+    letter-spacing: -0.025em;
+}
+
+.logoIcon {
+    color: var(--color-cyan);
+}
+
+.linksList {
+    display: none;
+    gap: 2rem;
+    list-style: none;
+}
+
+@media (min-width: 640px) {
+    .linksList {
+        display: flex;
+    }
+}
+
+.navLink {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-muted-light);
+    transition: color 0.3s ease;
+    text-decoration: none;
+}
+
+.navLink:hover {
+    color: var(--color-warm-white);
+}

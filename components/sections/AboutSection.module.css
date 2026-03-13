@@ -1,0 +1,154 @@
+.aboutContainer {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding-top: 7rem;
+    padding-bottom: 7rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    background: transparent;
+}
+
+@media (min-width: 768px) {
+    .aboutContainer {
+        padding-left: 4rem;
+        padding-right: 4rem;
+    }
+}
+
+.contentWrapper {
+    max-width: 72rem;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+@media (min-width: 768px) {
+    .contentWrapper {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6rem;
+    }
+}
+
+.aboutEyebrow {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-cyan);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.aboutEyebrowLine {
+    display: block;
+    width: 1.75rem;
+    height: 1px;
+    background-color: var(--color-cyan);
+}
+
+.aboutEyebrowNumber {
+    color: var(--color-muted);
+}
+
+.aboutTitle {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2rem, 5vw, 3.8rem);
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    margin-bottom: 1.5rem;
+}
+
+.aboutDescription {
+    color: var(--color-muted-light);
+    font-size: 1.02rem;
+    line-height: 1.75;
+    margin-bottom: 1rem;
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.statCard {
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.statNumber {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 2.4rem;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.statLabel {
+    font-size: 0.78rem;
+    color: var(--color-muted);
+    letter-spacing: 0.025em;
+}
+
+.visualContainer {
+    position: relative;
+    height: 20rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+
+@media (min-width: 768px) {
+    .visualContainer {
+        height: 30rem;
+    }
+}
+
+.kingPiece {
+    font-size: 12rem;
+    opacity: 0.055;
+    font-family: serif;
+    pointer-events: none;
+}
+
+@media (min-width: 768px) {
+    .kingPiece {
+        font-size: 15rem;
+    }
+}
+
+.floatingPieces {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    font-size: 2rem;
+    opacity: 0.4;
+}
+
+.floatingPiece {
+    display: inline-block;
+}
+
+.radialGlow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(0,240,255,0.05) 0%, transparent 70%);
+    pointer-events: none;
+}
