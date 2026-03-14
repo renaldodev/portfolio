@@ -31,8 +31,11 @@ export default function TimelineSection() {
     const progressRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const ctx = gsap.context(() => {
-            gsap.fromTo(progressRef.current, { width: '0%' }, {
+        let mm = gsap.matchMedia();
+
+        mm.add("(min-width: 768px)", () => {
+            // Desktop: Horizontal animation
+            gsap.fromTo(progressRef.current, { width: '0%', height: '100%' }, {
                 width: '100%', ease: 'none',
                 scrollTrigger: {
                     trigger: sectionRef.current, start: 'top 60%', end: 'bottom 80%', scrub: 1,
@@ -43,7 +46,30 @@ export default function TimelineSection() {
                 scrollTrigger: { trigger: sectionRef.current, start: 'top 65%' },
             });
         }, sectionRef);
-        return () => ctx.revert();
+
+        mm.add("(max-width: 767px)", () => {
+            // Mobile: Vertical animation
+            gsap.fromTo(progressRef.current, { height: '0%', width: '100%' }, {
+                height: '100%', ease: 'none',
+                scrollTrigger: {
+                    trigger: sectionRef.current, start: 'top 60%', end: 'bottom 85%', scrub: 1,
+                },
+            });
+            
+            // Animate items individually as they enter viewport
+            const items = gsap.utils.toArray('.tl-item');
+            items.forEach((item: any) => {
+                gsap.fromTo(item, { opacity: 0, x: -28 }, {
+                    opacity: 1, x: 0, duration: 0.7, ease: 'power3.out',
+                    scrollTrigger: { 
+                        trigger: item, 
+                        start: 'top 85%' 
+                    },
+                });
+            });
+        }, sectionRef);
+
+        return () => mm.revert();
     }, []);
 
     return (
@@ -69,7 +95,7 @@ export default function TimelineSection() {
                     {/* Items */}
                     <div className={styles.eventsGrid}>
                         {events.map((e, i) => (
-                            <div key={i} className="tl-item">
+                            <div key={i} className={`tl-item ${styles.timelineItem}`}>
                                 <div
                                     className={`${styles.timelineDot} ${i === events.length - 1 ? styles.timelineDotActive : ''}`}
                                 />

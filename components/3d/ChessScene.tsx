@@ -1,168 +1,148 @@
 'use client';
 
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 
-/* ── Chess Board ── */
-function ChessBoard() {
-    const tiles = useMemo(() => {
-        const arr = [];
-        for (let x = 0; x < 8; x++) {
-            for (let z = 0; z < 8; z++) {
-                arr.push({ x: x - 3.5, z: z - 3.5, dark: (x + z) % 2 === 1, id: `${x}-${z}` });
-            }
-        }
-        return arr;
+/* ── Audio Engine v4 — lazy unlock após user gesture ── */
+function createAudioEngine() {
+    let ctx: AudioContext | null = null;
+    let unlocked = false;
+
+    function unlock() {
+        if (unlocked) return;
+        unlocked = true;
+        if (!ctx) ctx = new AudioContext();
+        if (ctx.state === 'suspended') ctx.resume();
+    }
+
+    function getCtx(): AudioContext | null {
+        if (!unlocked || !ctx) return null;
+        return ctx;
+    }
+
+    function playCameraTransition(segmentIndex: number) {
+        const ac = getCtx();
+        if (!ac) return;
+
+        const notes = [220, 196, 165, 147, 131];
+        const freq = notes[segmentIndex % notes.length];
+
+        const osc = ac.createOscillator();
+        const gain = ac.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq * 2, ac.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(freq, ac.currentTime + 0.6);
+
+        gain.gain.setValueAtTime(0, ac.currentTime);
+        gain.gain.linearRampToValueAtTime(0.12, ac.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 1.2);
+
+        const delay = ac.createDelay(0.5);
+        const feedback = ac.createGain();
+        const wet = ac.createGain();
+
+        delay.delayTime.setValueAtTime(0.18, ac.currentTime);
+        feedback.gain.setValueAtTime(0.25, ac.currentTime);
+        wet.gain.setValueAtTime(0.35, ac.currentTime);
+
+        osc.connect(gain);
+        gain.connect(ac.destination);
+        gain.connect(wet);
+        wet.connect(delay);
+        delay.connect(feedback);
+        feedback.connect(delay);
+        delay.connect(ac.destination);
+
+        osc.start(ac.currentTime);
+        osc.stop(ac.currentTime + 1.4);
+
+        const sub = ac.createOscillator();
+        const subG = ac.createGain();
+
+        sub.type = 'sine';
+        sub.frequency.setValueAtTime(freq / 2, ac.currentTime);
+
+        subG.gain.setValueAtTime(0, ac.currentTime);
+        subG.gain.linearRampToValueAtTime(0.04, ac.currentTime + 0.1);
+        subG.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.8);
+
+        sub.connect(subG);
+        subG.connect(ac.destination);
+
+        sub.start(ac.currentTime);
+        sub.stop(ac.currentTime + 0.9);
+    }
+
+    return { playCameraTransition, unlock };
+}
+
+const audioEngine = createAudioEngine();
+
+/* ── Responsive Hook ── */
+function useViewport() {
+    const getState = () => ({
+        width: typeof window !== 'undefined' ? window.innerWidth : 1280,
+        height: typeof window !== 'undefined' ? window.innerHeight : 800,
+        isMobile: typeof window !== 'undefined' ? window.innerWidth < 768 : false,
+        isTablet: typeof window !== 'undefined'
+            ? window.innerWidth >= 768 && window.innerWidth < 1024
+            : false,
+    });
+
+    const [viewport, setViewport] = useStateCompat(getState);
+
+    useEffect(() => {
+        const handleResize = () => setViewport(getState());
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    return (
-        <group>
-            <mesh position={[0, -0.08, 0]} receiveShadow>
-                <boxGeometry args={[8.6, 0.14, 8.6]} />
-                <meshStandardMaterial color="#0a0a14" metalness={0.3} roughness={0.7} />
-            </mesh>
-            {tiles.map(({ x, z, dark, id }) => (
-                <mesh key={id} position={[x, 0, z]} receiveShadow>
-                    <boxGeometry args={[0.93, 0.05, 0.93]} />
-                    <meshStandardMaterial
-                        color={dark ? '#0d0d1f' : '#1a1a38'}
-                        metalness={dark ? 0.4 : 0.1}
-                        roughness={0.7}
-                    />
-                </mesh>
-            ))}
-            {/* Cyan glow border */}
-            <mesh position={[0, -0.01, 0]}>
-                <boxGeometry args={[8.8, 0.02, 8.8]} />
-                <meshBasicMaterial color="#00f0ff" transparent opacity={0.15} />
-            </mesh>
-        </group>
-    );
+    return viewport;
 }
 
-/* ── Pieces ── */
-function King({ pos, color = '#00f0ff' }: { pos: [number, number, number]; color?: string }) {
-    const g = useRef<THREE.Group>(null);
-    useFrame(({ clock }) => {
-        if (!g.current) return;
-        g.current.position.y = pos[1] + Math.sin(clock.elapsedTime * 0.8) * 0.05;
-        g.current.rotation.y = Math.sin(clock.elapsedTime * 0.4) * 0.1;
-    });
-    return (
-        <group ref={g} position={pos}>
-            <mesh position={[0, 0.1, 0]} castShadow>
-                <cylinderGeometry args={[0.18, 0.22, 0.2, 8]} />
-                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.5} metalness={0.8} roughness={0.2} />
-            </mesh>
-            <mesh position={[0, 0.28, 0]} castShadow>
-                <cylinderGeometry args={[0.12, 0.18, 0.18, 8]} />
-                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.3} metalness={0.8} roughness={0.2} />
-            </mesh>
-            <mesh position={[0, 0.46, 0]} castShadow>
-                <sphereGeometry args={[0.16, 12, 12]} />
-                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.6} metalness={0.9} roughness={0.1} />
-            </mesh>
-            <mesh position={[0, 0.65, 0]} castShadow>
-                <cylinderGeometry args={[0.05, 0.05, 0.22, 4]} />
-                <meshStandardMaterial color="#ffffff" emissive="#ffffaa" emissiveIntensity={1} />
-            </mesh>
-            <mesh position={[0, 0.65, 0]} rotation={[0, Math.PI / 4, 0]}>
-                <cylinderGeometry args={[0.05, 0.05, 0.22, 4]} />
-                <meshStandardMaterial color="#ffffff" emissive="#ffffaa" emissiveIntensity={1} />
-            </mesh>
-        </group>
-    );
+// tiny helper to avoid importing useState directly (already imported above via React)
+import { useState } from 'react';
+function useStateCompat<T>(init: () => T) {
+    return useState<T>(init);
 }
 
-function Rook({ pos, color = '#9b5de5' }: { pos: [number, number, number]; color?: string }) {
-    return (
-        <group position={pos}>
-            <mesh castShadow position={[0, 0.12, 0]}>
-                <cylinderGeometry args={[0.19, 0.22, 0.24, 8]} />
-                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.3} metalness={0.6} roughness={0.4} />
-            </mesh>
-            <mesh castShadow position={[0, 0.3, 0]}>
-                <cylinderGeometry args={[0.13, 0.19, 0.18, 8]} />
-                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.2} metalness={0.6} roughness={0.4} />
-            </mesh>
-            <mesh castShadow position={[0, 0.42, 0]}>
-                <boxGeometry args={[0.3, 0.12, 0.3]} />
-                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.4} metalness={0.6} roughness={0.3} />
-            </mesh>
-        </group>
-    );
-}
-
-function Knight({ pos, color = '#f72585' }: { pos: [number, number, number]; color?: string }) {
-    const g = useRef<THREE.Group>(null);
-    useFrame(({ clock }) => {
-        if (!g.current) return;
-        g.current.position.y = pos[1] + Math.sin(clock.elapsedTime * 1.2 + 1) * 0.04;
-    });
-    return (
-        <group ref={g} position={pos}>
-            <mesh castShadow position={[0, 0.12, 0]}>
-                <cylinderGeometry args={[0.15, 0.2, 0.24, 8]} />
-                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.3} metalness={0.5} roughness={0.5} />
-            </mesh>
-            <mesh castShadow position={[0.04, 0.35, 0.04]} rotation={[0.3, 0, -0.1]}>
-                <icosahedronGeometry args={[0.16, 1]} />
-                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.5} metalness={0.7} roughness={0.3} />
-            </mesh>
-        </group>
-    );
-}
-
-function Bishop({ pos, color = '#00e5ff' }: { pos: [number, number, number]; color?: string }) {
-    return (
-        <group position={pos}>
-            <mesh castShadow position={[0, 0.12, 0]}>
-                <cylinderGeometry args={[0.15, 0.2, 0.24, 8]} />
-                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.3} metalness={0.6} roughness={0.4} />
-            </mesh>
-            <mesh castShadow position={[0, 0.36, 0]}>
-                <coneGeometry args={[0.13, 0.3, 8]} />
-                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.4} metalness={0.6} roughness={0.3} />
-            </mesh>
-            <mesh castShadow position={[0, 0.53, 0]}>
-                <sphereGeometry args={[0.06, 8, 8]} />
-                <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={1} />
-            </mesh>
-        </group>
-    );
-}
-
-function Pawn({ pos, color = '#5a5a7a' }: { pos: [number, number, number]; color?: string }) {
-    return (
-        <group position={pos}>
-            <mesh castShadow position={[0, 0.08, 0]}>
-                <cylinderGeometry args={[0.11, 0.15, 0.16, 8]} />
-                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.15} metalness={0.3} roughness={0.7} />
-            </mesh>
-            <mesh castShadow position={[0, 0.22, 0]}>
-                <cylinderGeometry args={[0.07, 0.11, 0.12, 8]} />
-                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.15} metalness={0.3} roughness={0.7} />
-            </mesh>
-            <mesh castShadow position={[0, 0.32, 0]}>
-                <sphereGeometry args={[0.1, 10, 10]} />
-                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.2} metalness={0.3} roughness={0.7} />
-            </mesh>
-        </group>
-    );
+/* ── Context Loss Recovery ── */
+function ContextGuard() {
+    const { gl } = useThree();
+    useEffect(() => {
+        const canvas = gl.domElement;
+        const handleLost = (e: Event) => { e.preventDefault(); };
+        const handleRestored = () => (gl as any).forceContextRestore?.();
+        canvas.addEventListener('webglcontextlost', handleLost);
+        canvas.addEventListener('webglcontextrestored', handleRestored);
+        return () => {
+            canvas.removeEventListener('webglcontextlost', handleLost);
+            canvas.removeEventListener('webglcontextrestored', handleRestored);
+        };
+    }, [gl]);
+    return null;
 }
 
 /* ── Particles ── */
-function Particles() {
+function Particles({ count = 150 }: { count?: number }) {
     const positions = useMemo(() => {
-        const p = new Float32Array(200 * 3);
-        for (let i = 0; i < 200 * 3; i++) p[i] = (Math.random() - 0.5) * 26;
+        const p = new Float32Array(count * 3);
+        for (let i = 0; i < count * 3; i++) p[i] = (Math.random() - 0.5) * 26;
         return p;
-    }, []);
+    }, [count]);
+
     const ref = useRef<THREE.Points>(null);
+
     useFrame(({ clock }) => {
-        if (ref.current) ref.current.rotation.y = clock.elapsedTime * 0.007;
+        if (!ref.current) return;
+        const maxScroll = document.body.scrollHeight - window.innerHeight || 1;
+        const p = Math.min(Math.max((window.scrollY || 0) / maxScroll, 0), 1);
+        ref.current.rotation.y = clock.elapsedTime * 0.007 + p * Math.PI;
     });
+
     return (
         <points ref={ref}>
             <bufferGeometry>
@@ -173,71 +153,250 @@ function Particles() {
     );
 }
 
-/* ── All pieces ── */
-const PAWN_XS = [-3.5, -2.5, -1.5, -0.5, 0.5, 1.5, 2.5, 3.5];
-
-function Scene() {
+/* ── Chess Piece ── */
+function ChessPiece({ geometry, material, position, rotation, index = 0 }: any) {
     const g = useRef<THREE.Group>(null);
     useFrame(({ clock }) => {
-        if (g.current) g.current.rotation.y = Math.sin(clock.elapsedTime * 0.05) * 0.08;
+        if (!g.current) return;
+        g.current.position.y = position[1] + Math.sin(clock.elapsedTime * 0.8 + index * 0.3) * 0.04;
     });
     return (
-        <group ref={g}>
-            <ChessBoard />
-            <King pos={[0, 0.04, 0]} color="#00f0ff" />
-            <Rook pos={[-3.5, 0.04, -3.5]} color="#9b5de5" />
-            <Rook pos={[3.5, 0.04, -3.5]} color="#9b5de5" />
-            <Knight pos={[-2.5, 0.04, -3.5]} color="#f72585" />
-            <Knight pos={[2.5, 0.04, -3.5]} color="#f72585" />
-            <Bishop pos={[-1.5, 0.04, -3.5]} color="#00e5ff" />
-            <Bishop pos={[1.5, 0.04, -3.5]} color="#00e5ff" />
-            {PAWN_XS.map((x, i) => (
-                <Pawn key={i} pos={[x, 0.04, -2.5]} color="#5a5a7a" />
-            ))}
-            <Particles />
+        <group ref={g} position={position} rotation={rotation}>
+            <mesh castShadow receiveShadow geometry={geometry} material={material} />
         </group>
     );
 }
 
-/* ── Camera ── */
-function CameraRig() {
-    const { camera } = useThree();
+/* ── Board position helpers ── */
+const Y = -0.58;
+const col = (c: 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h') =>
+    ({ a: -1.1, b: -0.825, c: -0.55, d: -0.275, e: 0, f: 0.275, g: 0.55, h: 0.825 }[c]);
+const row = (r: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8) =>
+    ([1.1, 0.825, 0.55, 0.275, 0, -0.275, -0.55, -0.825] as const)[r - 1];
+
+/* ── Board + Pieces ── */
+function ChessBoardAndPieces() {
+    const { nodes, materials } = useGLTF('/chess_board.glb') as any;
+    const wRot: [number, number, number] = [-Math.PI / 2, 0, 0];
+    const bRot: [number, number, number] = [-Math.PI / 2, 0, Math.PI];
+
+    return (
+        <group scale={2 * 0.003} position={[0, -0.6, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <group rotation={[Math.PI / 2, 0, 0]}>
+                <group rotation={[-Math.PI / 2, 0, 0]}>
+                    <mesh castShadow receiveShadow geometry={nodes['Chess_Board_08_-_Default_0'].geometry} material={materials['08_-_Default']} />
+                    <mesh castShadow receiveShadow geometry={nodes['Chess_Board_07_-_Default_0'].geometry} material={materials['07_-_Default']} />
+                    <mesh castShadow receiveShadow geometry={nodes['Chess_Board_03_-_Default_0'].geometry} material={materials['03_-_Default']} />
+                    <mesh castShadow receiveShadow geometry={nodes['Chess_Board_02_-_Default_0'].geometry} material={materials['02_-_Default_0']} />
+                </group>
+
+                {/* ♔ White King — e4 */}
+                <ChessPiece geometry={nodes['W_King_02_-_Default_0'].geometry} material={materials['02_-_Default']} position={[col('e'), Y, row(4)]} rotation={wRot} index={0} />
+                {/* ♕ White Queen — d6 */}
+                <ChessPiece geometry={nodes['W_Queen_02_-_Default_0'].geometry} material={materials['02_-_Default']} position={[col('d'), Y, row(6)]} rotation={wRot} index={1} />
+                {/* ♖ White Rook — h1 */}
+                <ChessPiece geometry={nodes['W_Rook_1_02_-_Default_0'].geometry} material={materials['02_-_Default']} position={[col('h'), Y, row(1)]} rotation={wRot} index={2} />
+                {/* ♚ Black King — e8 */}
+                <ChessPiece geometry={nodes['B_King_01_-_Default_0'].geometry} material={materials['01_-_Default']} position={[col('e'), Y, row(8)]} rotation={bRot} index={3} />
+                {/* ♜ Black Rook — a8 */}
+                <ChessPiece geometry={nodes['B_Rook_1_01_-_Default_0'].geometry} material={materials['01_-_Default']} position={[col('a'), Y, row(8)]} rotation={bRot} index={4} />
+                {/* ♟ Black Pawn — f7 */}
+                <ChessPiece geometry={nodes['B_Pawn_1_01_-_Default_0'].geometry} material={materials['01_-_Default']} position={[col('f'), Y, row(7)]} rotation={bRot} index={5} />
+            </group>
+        </group>
+    );
+}
+
+/* ── Scene ── */
+function Scene({ particleCount }: { particleCount: number }) {
+    const g = useRef<THREE.Group>(null);
     useFrame(({ clock }) => {
-        const t = clock.elapsedTime;
-        camera.position.x += (Math.sin(t * 0.04) * 1.5 - camera.position.x) * 0.012;
-        camera.position.y += (7 + Math.sin(t * 0.06) * 0.5 - camera.position.y) * 0.012;
-        camera.position.z += (9.5 + Math.cos(t * 0.05) - camera.position.z) * 0.012;
-        camera.lookAt(0, 0, 0);
+        if (!g.current) return;
+        g.current.rotation.y = Math.sin(clock.elapsedTime * 0.05) * 0.08;
     });
+    return (
+        <group ref={g}>
+            <ChessBoardAndPieces />
+            <Particles count={particleCount} />
+        </group>
+    );
+}
+
+/* ── Responsive Camera Points ── */
+function getCameraPoints(isMobile: boolean, isTablet: boolean) {
+    if (isMobile) {
+        return [
+            { pos: new THREE.Vector3(0, 4.0, 5.5), look: new THREE.Vector3(0, -0.4, 0) },
+            { pos: new THREE.Vector3(0.2, 1.4, 2.8), look: new THREE.Vector3(0, -0.5, 0.27) },
+            { pos: new THREE.Vector3(-1.2, 0.8, 1.5), look: new THREE.Vector3(-0.275, -0.4, -0.275) },
+            { pos: new THREE.Vector3(1.5, 1.5, -0.3), look: new THREE.Vector3(0, -0.4, -0.825) },
+            { pos: new THREE.Vector3(-0.3, 1.0, 3.5), look: new THREE.Vector3(0, -0.5, 0) },
+        ];
+    }
+    if (isTablet) {
+        return [
+            { pos: new THREE.Vector3(0, 3.6, 5.0), look: new THREE.Vector3(0, -0.4, 0) },
+            { pos: new THREE.Vector3(0.3, 1.1, 2.3), look: new THREE.Vector3(0, -0.5, 0.27) },
+            { pos: new THREE.Vector3(-1.4, 0.6, 1.2), look: new THREE.Vector3(-0.275, -0.4, -0.275) },
+            { pos: new THREE.Vector3(1.7, 1.3, -0.4), look: new THREE.Vector3(0, -0.4, -0.825) },
+            { pos: new THREE.Vector3(-0.4, 0.8, 3.2), look: new THREE.Vector3(0, -0.5, 0) },
+        ];
+    }
+    return [
+        { pos: new THREE.Vector3(0, 3.2, 4.5), look: new THREE.Vector3(0, -0.4, 0) },
+        { pos: new THREE.Vector3(0.3, 1.0, 2.0), look: new THREE.Vector3(0, -0.5, 0.27) },
+        { pos: new THREE.Vector3(-1.5, 0.5, 1.0), look: new THREE.Vector3(-0.275, -0.4, -0.275) },
+        { pos: new THREE.Vector3(1.8, 1.2, -0.5), look: new THREE.Vector3(0, -0.4, -0.825) },
+        { pos: new THREE.Vector3(-0.5, 0.7, 3.0), look: new THREE.Vector3(0, -0.5, 0) },
+    ];
+}
+
+/* ── Camera + Sound ── */
+function CameraRig({ isMobile, isTablet }: { isMobile: boolean; isTablet: boolean }) {
+    const { camera } = useThree();
+    const targetPos = useRef(new THREE.Vector3());
+    const targetLook = useRef(new THREE.Vector3());
+    const lastSegment = useRef(-1);
+    const hasInteracted = useRef(false);
+    const cameraPoints = useMemo(
+        () => getCameraPoints(isMobile, isTablet),
+        [isMobile, isTablet]
+    );
+
+    useEffect(() => {
+        const onInteract = () => {
+            if (hasInteracted.current) return;
+            hasInteracted.current = true;
+            audioEngine.unlock(); // ← desbloqueia AudioContext no primeiro gesture
+        };
+        window.addEventListener('scroll', onInteract, { once: true });
+        window.addEventListener('click', onInteract, { once: true });
+        window.addEventListener('touchstart', onInteract, { once: true });
+        return () => {
+            window.removeEventListener('scroll', onInteract);
+            window.removeEventListener('click', onInteract);
+            window.removeEventListener('touchstart', onInteract);
+        };
+    }, []);
+
+    useFrame(({ clock }) => {
+        const maxScroll = Math.max(1, document.body.scrollHeight - window.innerHeight);
+        const p = Math.min(Math.max((window.scrollY || 0) / maxScroll, 0), 1);
+        const totalSegs = cameraPoints.length - 1;
+        const rawIndex = p * totalSegs;
+        const startIndex = Math.floor(rawIndex);
+        const endIndex = Math.min(startIndex + 1, totalSegs);
+        const factor = Math.sin((rawIndex - startIndex) * (Math.PI / 2));
+
+        if (
+            startIndex !== lastSegment.current &&
+            hasInteracted.current &&
+            (rawIndex - startIndex) < 0.15
+        ) {
+            lastSegment.current = startIndex;
+            audioEngine.playCameraTransition(startIndex);
+        }
+
+        const startPt = cameraPoints[startIndex];
+        const endPt = cameraPoints[endIndex];
+
+        targetPos.current.copy(startPt.pos).lerp(endPt.pos, factor);
+        targetPos.current.x += Math.sin(clock.elapsedTime * 0.3) * 0.05;
+        targetPos.current.y += Math.sin(clock.elapsedTime * 0.4) * 0.05;
+
+        targetLook.current.copy(startPt.look).lerp(endPt.look, factor);
+
+        camera.position.lerp(targetPos.current, 0.04);
+        if (!camera.userData.currentLook)
+            camera.userData.currentLook = new THREE.Vector3(0, 0, 0);
+        camera.userData.currentLook.lerp(targetLook.current, 0.04);
+        camera.lookAt(camera.userData.currentLook);
+    });
+
     return null;
 }
 
-/* ── Main export ── */
+/* ── Responsive FOV ── */
+function ResponsiveFOV({ isMobile, isTablet }: { isMobile: boolean; isTablet: boolean }) {
+    const { camera, size } = useThree();
+    useEffect(() => {
+        if (camera instanceof THREE.PerspectiveCamera) {
+            camera.fov = isMobile ? 60 : isTablet ? 52 : 45;
+            camera.updateProjectionMatrix();
+        }
+    }, [camera, isMobile, isTablet, size]);
+    return null;
+}
+
+/* ── DPR ── */
+const baseDpr = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1;
+
+/* ── Main Export ── */
 export default function ChessScene() {
+    const { isMobile, isTablet } = useViewport();
+
+    const particleCount = isMobile ? 60 : isTablet ? 100 : 150;
+    const dpr = isMobile ? Math.min(baseDpr, 1.5) : baseDpr;
+
+    const initialCameraPos = useMemo<[number, number, number]>(() => {
+        if (isMobile) return [0, 4.0, 5.5];
+        if (isTablet) return [0, 3.6, 5.0];
+        return [0, 3.2, 4.5];
+    }, [isMobile, isTablet]);
+
     return (
-        <div style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+        <div
+            style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                touchAction: 'pan-y',
+            }}
+        >
             <Canvas
                 shadows
-                dpr={typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1}
+                dpr={dpr}
                 gl={{
-                    antialias: true,
+                    antialias: !isMobile,
                     alpha: true,
-                    powerPreference: 'high-performance',
+                    powerPreference: isMobile ? 'low-power' : 'default',
                     failIfMajorPerformanceCaveat: false,
                 }}
-                camera={{ fov: 45, position: [2, 8, 10], near: 0.1, far: 200 }}
-                style={{ width: '100%', height: '100%', display: 'block', position: 'absolute', inset: 0 }}
+                camera={{
+                    fov: isMobile ? 60 : isTablet ? 52 : 45,
+                    position: initialCameraPos,
+                    near: 0.1,
+                    far: 200,
+                }}
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'block',
+                    position: 'absolute',
+                    inset: 0,
+                }}
             >
-                <CameraRig />
+                <ContextGuard />
+                <ResponsiveFOV isMobile={isMobile} isTablet={isTablet} />
+                <CameraRig isMobile={isMobile} isTablet={isTablet} />
 
-                {/* Lighting — no external HDR/Environment asset, pure manual lights */}
                 <ambientLight intensity={0.5} color="#1a1a3a" />
-                <directionalLight position={[5, 10, 5]} intensity={1.5} color="#ffffff" castShadow />
+                <directionalLight
+                    position={[5, 10, 5]}
+                    intensity={1.5}
+                    color="#ffffff"
+                    castShadow={!isMobile}
+                />
                 <pointLight position={[0, 6, 0]} intensity={2} color="#00f0ff" distance={18} decay={2} />
                 <pointLight position={[-4, 4, 4]} intensity={1.5} color="#9b5de5" distance={15} decay={2} />
-                <pointLight position={[4, 4, -4]} intensity={1} color="#f72585" distance={12} decay={2} />
+                {!isMobile && (
+                    <pointLight position={[4, 4, -4]} intensity={1} color="#f72585" distance={12} decay={2} />
+                )}
 
-                <Scene />
+                <Suspense fallback={null}>
+                    <Scene particleCount={particleCount} />
+                </Suspense>
             </Canvas>
         </div>
     );

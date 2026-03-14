@@ -4,7 +4,7 @@
     padding-bottom: 7rem;
     padding-left: 1.5rem;
     padding-right: 1.5rem;
-    background: transparent;
+    background: rgba(5, 5, 9, 0.80);
 }
 
 @media (min-width: 768px) {
@@ -55,52 +55,87 @@
 .progressContainer {
     position: relative;
     margin-bottom: 2rem;
+    padding-bottom: 1rem;
 }
 
+@media (min-width: 768px) {
+    .progressContainer {
+        padding-bottom: 0;
+    }
+}
+
+/* Mobile: Vertical */
 .progressTrack {
     position: absolute;
-    top: 5px; /* Half of dot height (10px -> 5px) to intersect center */
-    left: 0;
-    height: 1px;
-    width: 100%;
+    top: 0;
+    left: 4px;
+    height: 100%;
+    width: 2px;
     background-color: rgba(255, 255, 255, 0.07);
     z-index: 1;
 }
 
 .progressFill {
-    height: 100%;
-    width: 0;
-    background: linear-gradient(90deg, #00f0ff, #9b5de5);
+    height: 0;
+    width: 100%;
+    background: linear-gradient(180deg, #00f0ff, #9b5de5);
 }
 
 .eventsGrid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
 }
 
-@media (min-width: 640px) {
-    .eventsGrid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@media (min-width: 1024px) {
-    .eventsGrid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
+.timelineItem {
+    position: relative;
+    padding-left: 2.5rem;
 }
 
 .timelineDot {
-    position: relative;
+    position: absolute;
     z-index: 2;
+    left: 0;
+    top: 5px;
     width: 0.625rem;
     height: 0.625rem;
     border-radius: 9999px;
     border: 2px solid rgba(255, 255, 255, 0.2);
     background-color: #0a0a12;
-    margin-bottom: 1.5rem;
     transition: all 0.5s ease;
+}
+
+/* Desktop: Horizontal */
+@media (min-width: 768px) {
+    .progressTrack {
+        top: 4px;
+        left: 0;
+        height: 2px;
+        width: 100%;
+    }
+
+    .progressFill {
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, #00f0ff, #9b5de5);
+    }
+
+    .eventsGrid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 2rem;
+    }
+
+    .timelineItem {
+        padding-left: 0;
+    }
+
+    .timelineDot {
+        position: relative;
+        left: auto;
+        top: auto;
+        margin-bottom: 1.5rem;
+    }
 }
 
 .timelineDotActive {

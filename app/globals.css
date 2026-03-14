@@ -109,7 +109,7 @@ body {
 }
 
 /* ── Noise grain ── */
-body::after {
+body::before {
   content: '';
   position: fixed;
   inset: 0;
