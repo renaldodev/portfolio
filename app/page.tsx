@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { Analytics } from "@vercel/analytics/next"
 import SmoothScroll from '@/components/providers/SmoothScroll';
 import CustomCursor from '@/components/ui/CustomCursor';
 import Loader from '@/components/ui/Loader';
@@ -34,46 +35,49 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="relative min-h-screen w-full bg-[#050509]">
-      {/* Loader */}
-      {!loaded && <Loader onComplete={() => setLoaded(true)} />}
+    <>
+      <div className="relative min-h-screen w-full bg-[#050509]">
+        {/* Loader */}
+        {!loaded && <Loader onComplete={() => setLoaded(true)} />}
 
-      {/*
+        {/*
         Fixed 3D canvas — ALWAYS in the DOM once we first render.
         We hide it with opacity while loading to prevent flash,
         but we NEVER unmount it (that would destroy the WebGL context).
         The canvas itself uses position:absolute inset-0 to fill this wrapper.
       */}
-      <div
-        className="fixed inset-0 z-0 pointer-events-none overflow-hidden"
-        style={{
-          opacity: loaded ? 1 : 0,
-          transition: 'opacity 0.6s ease',
-        }}
-      >
-        <ChessScene />
+        <div
+          className="fixed inset-0 z-0 pointer-events-none overflow-hidden"
+          style={{
+            opacity: loaded ? 1 : 0,
+            transition: 'opacity 0.6s ease',
+          }}
+        >
+          <ChessScene />
+        </div>
+
+        <SmoothScroll>
+          <CustomCursor />
+          <Nav />
+
+          <main className="relative z-10">
+            <HeroSection />
+            <AboutSection />
+            <SkillsSection />
+            <ProjectsSection />
+            <TimelineSection />
+            <ContactSection />
+          </main>
+
+          <footer className={styles.appFooter}>
+            <span>© 2024 Renaldo. All rights reserved.</span>
+            <span className={styles.footerBuiltWith}>
+              Built with <span className={styles.footerIcon}>♔</span> Next.js · Three.js · GSAP
+            </span>
+          </footer>
+        </SmoothScroll>
       </div>
-
-      <SmoothScroll>
-        <CustomCursor />
-        <Nav />
-
-        <main className="relative z-10">
-          <HeroSection />
-          <AboutSection />
-          <SkillsSection />
-          <ProjectsSection />
-          <TimelineSection />
-          <ContactSection />
-        </main>
-
-        <footer className={styles.appFooter}>
-          <span>© 2024 Renaldo. All rights reserved.</span>
-          <span className={styles.footerBuiltWith}>
-            Built with <span className={styles.footerIcon}>♔</span> Next.js · Three.js · GSAP
-          </span>
-        </footer>
-      </SmoothScroll>
-    </div>
+      <Analytics />
+    </>
   );
 }
