@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import SmoothScroll from '@/components/providers/SmoothScroll';
 import CustomCursor from '@/components/ui/CustomCursor';
 import Loader from '@/components/ui/Loader';
@@ -78,6 +79,7 @@ export default function Home() {
         </SmoothScroll>
       </div>
       <Analytics />
+      <SpeedInsights />
     </>
   );
 }
