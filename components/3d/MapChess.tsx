@@ -1,8 +1,21 @@
-import React, { useRef } from 'react'
-import { useGLTF } from '@react-three/drei'
+'use client';
 
-export function Model(props: any) {
-    const { nodes, materials } = useGLTF('/chess_board.glb') as any
+import type React from 'react';
+import { useGLTF } from '@react-three/drei';
+import type * as THREE from 'three';
+
+interface ThreeGroupProps {
+  position?: [number, number, number];
+  rotation?: [number, number, number];
+  scale?: number | [number, number, number];
+  children?: React.ReactNode;
+  [key: string]: unknown;
+}
+
+export function Model(props: ThreeGroupProps) {
+    const gltf = useGLTF('/chess_board.glb');
+    const nodes = gltf.nodes as unknown as Record<string, THREE.Mesh>;
+    const materials = gltf.materials as unknown as Record<string, THREE.Material>;
     return (
         <group {...props} dispose={null}>
             <group rotation={[-Math.PI / 2, 0, 0]} scale={0.003}>

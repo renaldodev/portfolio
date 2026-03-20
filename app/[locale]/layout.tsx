@@ -1,5 +1,18 @@
 import type { Metadata } from "next";
+import { Inter, Syne } from "next/font/google";
+import { NextIntlClientProvider } from 'next-intl';
 import "./globals.css";
+
+const inter = Inter({
+  variable: '--font-inter',
+  subsets: ['latin'],
+  display: 'swap',
+});
+const syne = Syne({
+  variable: '--font-syne',
+  subsets: ['latin'],
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: "Renaldo – Strategic Software Engineer",
@@ -13,13 +26,29 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+// Import all messages statically
+import enMessages from '@/messages/en.json';
+import ptMessages from '@/messages/pt.json';
+
+const messagesMap: Record<string, Record<string, any>> = {
+  en: enMessages as Record<string, any>,
+  pt: ptMessages as Record<string, any>,
+};
+
+export default async function RootLayout({
   children,
+  params
 }: Readonly<{
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }>) {
+  const { locale } = await params;
+
+  // Get messages for the locale, fallback to English
+  const messages = messagesMap[locale] || messagesMap.en;
+
   return (
-    <html lang="pt" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -28,7 +57,11 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body className={`${inter.variable} ${syne.variable}`}>
+        <NextIntlClientProvider messages={messages} locale={locale}>
+          {children}
+        </NextIntlClientProvider>
+      </body>
     </html>
   );
 }

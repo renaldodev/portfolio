@@ -1,8 +1,8 @@
 'use client';
 
-import { useRef, useMemo, useEffect, Suspense } from 'react';
+import { useRef, useMemo, useEffect, Suspense, useCallback } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useGLTF } from '@react-three/drei';
+import { useGLTF,PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 
 /* ── Audio Engine v4 — lazy unlock após user gesture ── */
@@ -78,27 +78,35 @@ function createAudioEngine() {
 
     return { playCameraTransition, unlock };
 }
+// chessPositions.ts
+export function createRandomPositions(count: number) {
+  const p = new Float32Array(count * 3);
+  for (let i = 0; i < count * 3; i++) {
+    p[i] = (Math.random() - 0.5) * 26;
+  }
+  return p;
+}
 
 const audioEngine = createAudioEngine();
 
 /* ── Responsive Hook ── */
 function useViewport() {
-    const getState = () => ({
+    const getState = useCallback(() => ({
         width: typeof window !== 'undefined' ? window.innerWidth : 1280,
         height: typeof window !== 'undefined' ? window.innerHeight : 800,
         isMobile: typeof window !== 'undefined' ? window.innerWidth < 768 : false,
         isTablet: typeof window !== 'undefined'
             ? window.innerWidth >= 768 && window.innerWidth < 1024
             : false,
-    });
+    }), []);
 
     const [viewport, setViewport] = useStateCompat(getState);
 
     useEffect(() => {
-        const handleResize = () => setViewport(getState());
+      const handleResize = () => setViewport(getState());
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, []);
+    }, [setViewport,getState]);
 
     return viewport;
 }
@@ -115,7 +123,7 @@ function ContextGuard() {
     useEffect(() => {
         const canvas = gl.domElement;
         const handleLost = (e: Event) => { e.preventDefault(); };
-        const handleRestored = () => (gl as any).forceContextRestore?.();
+        const handleRestored = () => (gl).forceContextRestore?.();
         canvas.addEventListener('webglcontextlost', handleLost);
         canvas.addEventListener('webglcontextrestored', handleRestored);
         return () => {
@@ -128,11 +136,7 @@ function ContextGuard() {
 
 /* ── Particles ── */
 function Particles({ count = 150 }: { count?: number }) {
-    const positions = useMemo(() => {
-        const p = new Float32Array(count * 3);
-        for (let i = 0; i < count * 3; i++) p[i] = (Math.random() - 0.5) * 26;
-        return p;
-    }, [count]);
+  const positions = useMemo(() => createRandomPositions(count), [count]);
 
     const ref = useRef<THREE.Points>(null);
 
@@ -154,7 +158,15 @@ function Particles({ count = 150 }: { count?: number }) {
 }
 
 /* ── Chess Piece ── */
-function ChessPiece({ geometry, material, position, rotation, index = 0 }: any) {
+interface ChessPieceProps {
+  geometry: THREE.BufferGeometry;
+  material: THREE.Material | THREE.Material[];
+  position: [number, number, number];
+  rotation: [number, number, number];
+  index?: number;
+}
+
+function ChessPiece({ geometry, material, position, rotation, index = 0 }: ChessPieceProps) {
     const g = useRef<THREE.Group>(null);
     useFrame(({ clock }) => {
         if (!g.current) return;
@@ -176,7 +188,9 @@ const row = (r: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8) =>
 
 /* ── Board + Pieces ── */
 function ChessBoardAndPieces() {
-    const { nodes, materials } = useGLTF('/chess_board.glb') as any;
+    const gltf = useGLTF('/chess_board.glb');
+    const nodes = gltf.nodes as unknown as Record<string, THREE.Mesh>;
+    const materials = gltf.materials as unknown as Record<string, THREE.Material>;
     const wRot: [number, number, number] = [-Math.PI / 2, 0, 0];
     const bRot: [number, number, number] = [-Math.PI / 2, 0, Math.PI];
 
@@ -258,16 +272,21 @@ function CameraRig({ isMobile, isTablet }: { isMobile: boolean; isTablet: boolea
     const targetLook = useRef(new THREE.Vector3());
     const lastSegment = useRef(-1);
     const hasInteracted = useRef(false);
+
+    // ✅ Refs COMPLETOS - ZERO mutações no camera.userData
+    const cameraPosRef = useRef(new THREE.Vector3());
+    const cameraLookRef = useRef(new THREE.Vector3());
+
     const cameraPoints = useMemo(
         () => getCameraPoints(isMobile, isTablet),
         [isMobile, isTablet]
     );
-
+    // ✅ Eventos de unlock (igual)
     useEffect(() => {
         const onInteract = () => {
             if (hasInteracted.current) return;
             hasInteracted.current = true;
-            audioEngine.unlock(); // ← desbloqueia AudioContext no primeiro gesture
+            audioEngine.unlock();
         };
         window.addEventListener('scroll', onInteract, { once: true });
         window.addEventListener('click', onInteract, { once: true });
@@ -303,30 +322,30 @@ function CameraRig({ isMobile, isTablet }: { isMobile: boolean; isTablet: boolea
         targetPos.current.copy(startPt.pos).lerp(endPt.pos, factor);
         targetPos.current.x += Math.sin(clock.elapsedTime * 0.3) * 0.05;
         targetPos.current.y += Math.sin(clock.elapsedTime * 0.4) * 0.05;
-
         targetLook.current.copy(startPt.look).lerp(endPt.look, factor);
 
-        camera.position.lerp(targetPos.current, 0.04);
-        if (!camera.userData.currentLook)
-            camera.userData.currentLook = new THREE.Vector3(0, 0, 0);
-        camera.userData.currentLook.lerp(targetLook.current, 0.04);
-        camera.lookAt(camera.userData.currentLook);
+        // ✅ 100% PURE: só lerp nos refs + copy/lookAt (idempotente)
+        cameraPosRef.current.lerp(targetPos.current, 0.04);
+        cameraLookRef.current.lerp(targetLook.current, 0.04);
+
+        camera.position.copy(cameraPosRef.current);
+        camera.lookAt(cameraLookRef.current);
     });
 
     return null;
 }
 
-/* ── Responsive FOV ── */
-function ResponsiveFOV({ isMobile, isTablet }: { isMobile: boolean; isTablet: boolean }) {
-    const { camera, size } = useThree();
-    useEffect(() => {
-        if (camera instanceof THREE.PerspectiveCamera) {
-            camera.fov = isMobile ? 60 : isTablet ? 52 : 45;
-            camera.updateProjectionMatrix();
-        }
-    }, [camera, isMobile, isTablet, size]);
-    return null;
+
+function ResponsiveCamera({ isMobile, isTablet }: { isMobile: boolean; isTablet: boolean }) {
+  return (
+    <PerspectiveCamera
+      makeDefault
+      fov={isMobile ? 60 : isTablet ? 52 : 45}  // React gerencia isso!
+      onUpdate={(camera) => camera.updateProjectionMatrix()}
+    />
+  );
 }
+
 
 /* ── DPR ── */
 const baseDpr = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1;
@@ -378,7 +397,7 @@ export default function ChessScene() {
                 }}
             >
                 <ContextGuard />
-                <ResponsiveFOV isMobile={isMobile} isTablet={isTablet} />
+                <ResponsiveCamera isMobile={isMobile} isTablet={isTablet} />
                 <CameraRig isMobile={isMobile} isTablet={isTablet} />
 
                 <ambientLight intensity={0.5} color="#1a1a3a" />
