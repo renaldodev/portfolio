@@ -17,102 +17,127 @@ export default function ContactSection() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo('.contact-inner > *', { opacity: 0, y: 36 }, {
-        opacity: 1, y: 0, stagger: 0.12, duration: 0.9, ease: 'power3.out',
-        scrollTrigger: { trigger: sectionRef.current, start: 'top 70%' },
-      });
+      gsap.fromTo(
+        '.contact-left > *',
+        { opacity: 0, y: 32 },
+        {
+          opacity: 1, y: 0, stagger: 0.11, duration: 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: sectionRef.current, start: 'top 70%' },
+        }
+      );
+      gsap.fromTo(
+        '.contact-right',
+        { opacity: 0, y: 24 },
+        {
+          opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', delay: 0.18,
+          scrollTrigger: { trigger: sectionRef.current, start: 'top 70%' },
+        }
+      );
     }, sectionRef);
     return () => ctx.revert();
   }, []);
 
+  const socials = [
+    { key: 'socialGitHub',   href: 'https://github.com/renaldodev',        label: t('socialGitHub') },
+    { key: 'socialLinkedIn', href: 'https://linkedin.com/in/renaldodev',   label: t('socialLinkedIn') },
+    { key: 'socialEmail',    href: 'mailto:renaldo@example.com',           label: t('socialEmail') },
+  ];
+
   return (
     <section id="contact" ref={sectionRef} className={styles.contactContainer}>
-      <div className={`contact-inner ${styles.contentWrapper}`}>
-        <div className={styles.contactEyebrow}>
-          <span className={styles.contactEyebrowLine} />
-          {t('checkmate')} <span className={styles.contactEyebrowNumber}>— 06</span>
-          <span className={styles.contactEyebrowLine} />
-        </div>
+      <div className={styles.inner}>
 
-        <h2 className={styles.contactTitle}>
-          {t('buildTogether')}<br />
-          <span className="gradient-text">{t('together')}</span>
-        </h2>
-
-        <p className={styles.contactDescription}>
-          {t('description')}
-        </p>
-
-        {!submitted ? (
-          <form
-            onSubmit={e => { e.preventDefault(); setSubmitted(true); }}
-            className={styles.contactForm}
-          >
-            <div className={styles.formGrid}>
-              <div className={styles.formField}>
-                <label className={styles.formLabel}>{tCommon('name')}</label>
-                <input className={styles.formInput} type="text" placeholder={tCommon('namePlaceholder')}
-                  value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
-              </div>
-              <div className={styles.formField}>
-                <label className={styles.formLabel}>{tCommon('email')}</label>
-                <input className={styles.formInput} type="email" placeholder={tCommon('emailPlaceholder')}
-                  value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required />
-              </div>
-            </div>
-            <div className={styles.formField}>
-              <label className={styles.formLabel}>{tCommon('message')}</label>
-              <textarea className={`${styles.formInput} ${styles.formTextarea}`} placeholder={tCommon('messagePlaceholder')}
-                value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} required />
-            </div>
-            <div className={styles.submitContainer}>
-              <button
-                type="submit"
-                className={styles.submitButton}
-              >
-                {tCommon('sendMessage')} ♔
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className={styles.successMessage}>
-            <div className={styles.successIcon}>♔</div>
-            <h3 className={styles.successTitle}>{t('successTitle')}</h3>
-            <p className={styles.successText}>{t('successText')}</p>
+        {/* ── Left: copy + socials ─────────────────────────────── */}
+        <div className={`contact-left ${styles.left}`}>
+          <div className={styles.eyebrow}>
+            <span className={styles.eyebrowLine} />
+            {t('checkmate')}
+            <span className={styles.eyebrowNum}>— 06</span>
           </div>
-        )}
 
-        <div className={styles.socialContainer}>
-          {[
-            {
-              href: 'https://github.com/renaldodev',
-              labelKey: 'socialGitHub',
-            },
-            {
-              href: 'https://linkedin.com/in/renaldodev',
-              labelKey: 'socialLinkedIn',
-            },
-            {
-              href: 'mailto:renaldo@example.com',
-              labelKey: 'socialEmail',
-            },
-          ].map(s => (
-            <a key={s.labelKey} href={s.href} target="_blank" rel="noopener noreferrer"
-              className={styles.socialLink}
-            >
-              {s.labelKey === 'socialGitHub' && (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" /></svg>
-              )}
-              {s.labelKey === 'socialLinkedIn' && (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /></svg>
-              )}
-              {s.labelKey === 'socialEmail' && (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
-              )}
-              <span>{t(s.labelKey)}</span>
-            </a>
-          ))}
+          <h2 className={styles.title}>
+            {t('buildTogether')}<br />
+            <span className="gradient-text">{t('together')}</span>
+          </h2>
+
+          <p className={styles.description}>{t('description')}</p>
+
+          <nav className={styles.socials} aria-label="Social links">
+            {socials.map(s => (
+              <a
+                key={s.key}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.socialLink}
+              >
+                <span>{s.label}</span>
+                <span className={styles.socialArrow} aria-hidden="true">↗</span>
+              </a>
+            ))}
+          </nav>
         </div>
+
+        {/* ── Right: form ──────────────────────────────────────── */}
+        <div className={`contact-right ${styles.right}`}>
+          {!submitted ? (
+            <form
+              onSubmit={e => { e.preventDefault(); setSubmitted(true); }}
+              className={styles.form}
+            >
+              <div className={styles.formRow}>
+                <div className={styles.formField}>
+                  <label htmlFor="contact-name" className={styles.formLabel}>{tCommon('name')}</label>
+                  <input
+                    id="contact-name"
+                    className={styles.formInput}
+                    type="text"
+                    placeholder={tCommon('namePlaceholder')}
+                    value={form.name}
+                    onChange={e => setForm({ ...form, name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className={styles.formField}>
+                  <label htmlFor="contact-email" className={styles.formLabel}>{tCommon('email')}</label>
+                  <input
+                    id="contact-email"
+                    className={styles.formInput}
+                    type="email"
+                    placeholder={tCommon('emailPlaceholder')}
+                    value={form.email}
+                    onChange={e => setForm({ ...form, email: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className={styles.formField}>
+                <label htmlFor="contact-message" className={styles.formLabel}>{tCommon('message')}</label>
+                <textarea
+                  id="contact-message"
+                  className={`${styles.formInput} ${styles.formTextarea}`}
+                  placeholder={tCommon('messagePlaceholder')}
+                  value={form.message}
+                  onChange={e => setForm({ ...form, message: e.target.value })}
+                  required
+                />
+              </div>
+
+              <button type="submit" className={styles.submitBtn}>
+                {tCommon('sendMessage')}
+                <span className={styles.submitIcon} aria-hidden="true">♔</span>
+              </button>
+            </form>
+          ) : (
+            <div className={styles.success}>
+              <div className={styles.successIcon} aria-hidden="true">♔</div>
+              <h3 className={styles.successTitle}>{t('successTitle')}</h3>
+              <p className={styles.successText}>{t('successText')}</p>
+            </div>
+          )}
+        </div>
+
       </div>
     </section>
   );

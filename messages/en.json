@@ -26,6 +26,12 @@
     "contact": "Contact",
     "logo": "Renaldo"
   },
+  "cookieBanner": {
+    "ariaLabel": "Cookie consent",
+    "description": "This site uses local storage and a single consent cookie to remember your <strong>theme preference</strong> (dark / light).",
+    "decline": "Decline",
+    "accept": "Accept"
+  },
   "hero": {
     "openingMove": "Opening Move — Strategic Software Engineer",
     "titleLine1": "I Build",
@@ -47,15 +53,42 @@
     "rooks": "Rooks — Backend",
     "rooksTitle": "Server & Infrastructure",
     "rooksDesc": "Rock-solid backends that hold the board together. APIs, databases, cloud infrastructure — the foundation of every system.",
-    "rooksTags": ["Node.js", "TypeScript", "PostgreSQL", "Redis", "Docker", "AWS", "REST", "GraphQL"],
+    "rooksTags": [
+      "Node.js",
+      "TypeScript",
+      "PostgreSQL",
+      "Redis",
+      "Docker",
+      "AWS",
+      "REST",
+      "GraphQL"
+    ],
     "knights": "Knights — AI & Automation",
     "knightsTitle": "Intelligent Agents",
     "knightsDesc": "Knights move in unexpected ways — so do AI systems. Building autonomous agents, pipelines, and smart automation.",
-    "knightsTags": ["LLMs", "LangChain", "Python", "OpenAI", "RAG", "Agents", "Automation", "ML Pipelines"],
+    "knightsTags": [
+      "LLMs",
+      "LangChain",
+      "Python",
+      "OpenAI",
+      "RAG",
+      "Agents",
+      "Automation",
+      "ML Pipelines"
+    ],
     "bishops": "Bishops — Frontend & UX",
     "bishopsTitle": "Interfaces & Experience",
     "bishopsDesc": "Diagonal thinking for frontend. Fast, beautiful, interactive experiences that make users feel something.",
-    "bishopsTags": ["React", "Next.js", "Three.js", "GSAP", "TypeScript", "CSS", "Figma", "Performance"]
+    "bishopsTags": [
+      "React",
+      "Next.js",
+      "Three.js",
+      "GSAP",
+      "TypeScript",
+      "CSS",
+      "Figma",
+      "Performance"
+    ]
   },
   "projects": {
     "midgameTactics": "Midgame Tactics",

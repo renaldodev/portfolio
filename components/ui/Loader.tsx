@@ -2,8 +2,9 @@
 
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
+import styles from './Loader.module.css';
 
-export default function Loader({ onComplete }: { onComplete: () => void }) {
+export default function Loader({ onCompleteAction }: { onCompleteAction: () => void }) {
     const loaderRef = useRef<HTMLDivElement>(null);
     const fillRef = useRef<HTMLDivElement>(null);
     const countRef = useRef<HTMLSpanElement>(null);
@@ -15,7 +16,7 @@ export default function Loader({ onComplete }: { onComplete: () => void }) {
                     yPercent: -100,
                     duration: 0.9,
                     ease: 'power3.inOut',
-                    onComplete,
+                    onComplete: onCompleteAction,
                 });
             },
         });
@@ -31,30 +32,20 @@ export default function Loader({ onComplete }: { onComplete: () => void }) {
                 },
                 0
             );
-    }, [onComplete]);
+    }, [onCompleteAction]);
 
     return (
-        <div
-            ref={loaderRef}
-            className="fixed inset-0 z-[10000] bg-[#050509] flex flex-col items-center justify-center gap-8"
-        >
-            {/* Chess king glyph */}
-            <div className="text-7xl" style={{ fontFamily: 'serif' }}>
+        <div ref={loaderRef} className={styles.loader}>
+            <div className={styles.king}>
                 <span className="gradient-text">♔</span>
             </div>
 
-            {/* Count */}
-            <div className="text-[#6b6b8a] text-xs tracking-[0.25em] uppercase">
+            <div className={styles.counter}>
                 Loading — <span ref={countRef}>0</span>%
             </div>
 
-            {/* Progress bar */}
-            <div className="w-48 h-px bg-white/10 rounded overflow-hidden">
-                <div
-                    ref={fillRef}
-                    className="h-full w-0 rounded"
-                    style={{ background: 'linear-gradient(90deg, #00f0ff, #9b5de5)' }}
-                />
+            <div className={styles.progressTrack}>
+                <div ref={fillRef} className={styles.progressFill} />
             </div>
         </div>
     );

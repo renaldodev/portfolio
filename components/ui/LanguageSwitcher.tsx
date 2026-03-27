@@ -23,6 +23,7 @@ export default function LanguageSwitcher() {
 
   return (
     <button
+      type="button"
       className={styles.languageSwitcher}
       onClick={handleSwitch}
       aria-label={t('switchLanguage') || `Switch to ${otherLabel}`}
