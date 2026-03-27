@@ -35,11 +35,17 @@ export default function CustomCursor() {
 
         document.addEventListener('mousemove', onMove);
         const els = document.querySelectorAll('a, button, [data-hoverable]');
-        els.forEach(el => { el.addEventListener('mouseenter', addHover); el.addEventListener('mouseleave', removeHover); });
+        for (const el of els) {
+          el.addEventListener('mouseenter', addHover);
+          el.addEventListener('mouseleave', removeHover);
+        }
 
         return () => {
             document.removeEventListener('mousemove', onMove);
-            els.forEach(el => { el.removeEventListener('mouseenter', addHover); el.removeEventListener('mouseleave', removeHover); });
+            for (const el of els) {
+              el.removeEventListener('mouseenter', addHover);
+              el.removeEventListener('mouseleave', removeHover);
+            }
         };
     }, []);
 

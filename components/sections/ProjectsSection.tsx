@@ -46,9 +46,8 @@ export default function ProjectsSection() {
 
       <div className="projects-list">
         {projectKeys.map(key => (
-          <a
+          <article
             key={key}
-            href="#"
             className={styles.projectRow}
           >
             <span className={styles.projectNumber}>[{t(`${key}Num`, { defaultValue: key.replace('p', '')})}]</span>
@@ -64,7 +63,7 @@ export default function ProjectsSection() {
               ))}
             </div>
             <span className={styles.projectArrow}>↗</span>
-          </a>
+          </article>
         ))}
         <div className={styles.finalBorder} />
       </div>

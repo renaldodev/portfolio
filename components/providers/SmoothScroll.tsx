@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, ReactNode } from 'react';
+import {type ReactNode,useEffect, useRef} from 'react';
 import Lenis from 'lenis';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -17,7 +17,7 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
     useEffect(() => {
         const lenis = new Lenis({
             duration: 1.2,
-            easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            easing: (t: number) => Math.min(1, 1.001 - 2 **(-10 * t)),
             orientation: 'vertical',
             gestureOrientation: 'vertical',
             smoothWheel: true,

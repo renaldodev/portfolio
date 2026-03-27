@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import MouseGlow from '@/components/ui/MouseGlow';
 import SmoothScroll from '@/components/providers/SmoothScroll';
 import CustomCursor from '@/components/ui/CustomCursor';
 import Loader from '@/components/ui/Loader';
@@ -15,12 +15,8 @@ import SkillsSection from '@/components/sections/SkillsSection';
 import ProjectsSection from '@/components/sections/ProjectsSection';
 import TimelineSection from '@/components/sections/TimelineSection';
 import ContactSection from '@/components/sections/ContactSection';
+import MarqueeStrip from '@/components/ui/MarqueeStrip';
 import styles from './page.module.css';
-
-const ChessScene = dynamic(() => import('@/components/3d/ChessScene'), {
-  ssr: false,
-  loading: () => null,
-});
 
 export default function Home() {
   const t = useTranslations('common');
@@ -33,23 +29,20 @@ export default function Home() {
 
   return (
     <>
-      <div className="relative min-h-screen w-full bg-[#050509]">
-        {!loaded && <Loader onComplete={() => setLoaded(true)} />}
-        <div
-          className="fixed inset-0 z-0 pointer-events-none overflow-hidden"
-          style={{
-            opacity: loaded ? 1 : 0,
-            transition: 'opacity 0.6s ease',
-          }}
-        >
-          <ChessScene />
-        </div>
+      <div className={styles.pageWrapper}>
+        {!loaded && <Loader onCompleteAction={() => setLoaded(true)} />}
+        <MouseGlow />
         <SmoothScroll>
           <CustomCursor />
           <Nav />
 
-          <main className="relative z-10">
+          <main className={styles.mainContent}>
             <HeroSection />
+            <MarqueeStrip
+              items={['Strategic Engineer', 'Backend Systems', 'AI Automation', 'Polished Frontends', 'Chess Theory', 'Open to Work']}
+              direction="left"
+              speed={25}
+            />
             <AboutSection />
             <SkillsSection />
             <ProjectsSection />
@@ -60,7 +53,7 @@ export default function Home() {
           <footer className={styles.appFooter}>
             <span>© 2024 Renaldo. {t('allRightsReserved')}</span>
             <span className={styles.footerBuiltWith}>
-              {t('builtWith')} <span className={styles.footerIcon}>♔</span> Next.js · Three.js · GSAP
+              {t('builtWith')} <span className={styles.footerIcon}>♔</span> Next.js · GSAP
             </span>
           </footer>
         </SmoothScroll>

@@ -26,11 +26,17 @@
     "contact": "Contato",
     "logo": "Renaldo"
   },
+  "cookieBanner": {
+    "ariaLabel": "Consentimento de cookies",
+    "description": "Este site usa armazenamento local e um cookie de consentimento para lembrar sua <strong>preferência de tema</strong> (claro / escuro).",
+    "decline": "Recusar",
+    "accept": "Aceitar"
+  },
   "hero": {
     "openingMove": "Abertura — Engenheiro de Software Estratégico",
     "titleLine1": "Construo",
     "titleLine2": "Sistemas",
-    "titleLine3": "Que Pensam.",
+    "titleLine3": "Pensantes.",
     "tagline": "Engenheiro de software focado em sistemas backend, agentes de IA e frontends polidos. Cada projeto é um movimento calculado — preciso, proposital, poderoso."
   },
   "about": {
@@ -47,15 +53,42 @@
     "rooks": "Torres — Backend",
     "rooksTitle": "Servidor & Infraestrutura",
     "rooksDesc": "Backends sólidos que mantêm o tabuleiro unido. APIs, bancos de dados, infraestrutura em nuvem — a fundação de todo sistema.",
-    "rooksTags": ["Node.js", "TypeScript", "PostgreSQL", "Redis", "Docker", "AWS", "REST", "GraphQL"],
+    "rooksTags": [
+      "Node.js",
+      "TypeScript",
+      "PostgreSQL",
+      "Redis",
+      "Docker",
+      "AWS",
+      "REST",
+      "GraphQL"
+    ],
     "knights": "Cavalos — IA & Automação",
     "knightsTitle": "Agentes Inteligentes",
     "knightsDesc": "Cavalos se movem de formas inesperadas — o mesmo fazem os sistemas de IA. Construindo agentes autônomos, pipelines e automação inteligente.",
-    "knightsTags": ["LLMs", "LangChain", "Python", "OpenAI", "RAG", "Agents", "Automation", "ML Pipelines"],
+    "knightsTags": [
+      "LLMs",
+      "LangChain",
+      "Python",
+      "OpenAI",
+      "RAG",
+      "Agents",
+      "Automation",
+      "ML Pipelines"
+    ],
     "bishops": "Bispos — Frontend & UX",
     "bishopsTitle": "Interfaces & Experiência",
     "bishopsDesc": "Pensamento diagonal para frontend. Experiências rápidas, bonitas e interativas que fazem os usuários sentirem algo.",
-    "bishopsTags": ["React", "Next.js", "Three.js", "GSAP", "TypeScript", "CSS", "Figma", "Performance"]
+    "bishopsTags": [
+      "React",
+      "Next.js",
+      "Three.js",
+      "GSAP",
+      "TypeScript",
+      "CSS",
+      "Figma",
+      "Performance"
+    ]
   },
   "projects": {
     "midgameTactics": "Táticas do Meio-jogo",

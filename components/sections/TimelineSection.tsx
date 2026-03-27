@@ -18,83 +18,68 @@ const events = [
 export default function TimelineSection() {
   const t = useTranslations('timeline');
   const sectionRef = useRef<HTMLElement>(null);
-  const progressRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const mm = gsap.matchMedia();
-
-    mm.add("(min-width: 768px)", () => {
-      gsap.fromTo(progressRef.current, { width: '0%', height: '100%' }, {
-        width: '100%', ease: 'none',
-        scrollTrigger: {
-          trigger: sectionRef.current, start: 'top 60%', end: 'bottom 80%', scrub: 1,
-        },
-      });
-      gsap.fromTo('.tl-item', { opacity: 0, y: 28 }, {
-        opacity: 1, y: 0, stagger: 0.12, duration: 0.7, ease: 'power3.out',
-        scrollTrigger: { trigger: sectionRef.current, start: 'top 65%' },
-      });
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        '.tl-card',
+        { opacity: 0, y: 32 },
+        {
+          opacity: 1,
+          y: 0,
+          stagger: 0.1,
+          duration: 0.8,
+          ease: 'power3.out',
+          scrollTrigger: { trigger: sectionRef.current, start: 'top 70%' },
+        }
+      );
     }, sectionRef);
-
-    mm.add("(max-width: 767px)", () => {
-      gsap.fromTo(progressRef.current, { height: '0%', width: '100%' }, {
-        height: '100%', ease: 'none',
-        scrollTrigger: {
-          trigger: sectionRef.current, start: 'top 60%', end: 'bottom 85%', scrub: 1,
-        },
-      });
-
-      const items = document.querySelectorAll<HTMLElement>('.tl-item');
-      items.forEach((item) => {
-        gsap.fromTo(item, { opacity: 0, x: -28 }, {
-          opacity: 1, x: 0, duration: 0.7, ease: 'power3.out',
-          scrollTrigger: {
-            trigger: item,
-            start: 'top 85%'
-          },
-        });
-      });
-    }, sectionRef);
-
-    return () => mm.revert();
+    return () => ctx.revert();
   }, []);
 
   return (
     <section id="timeline" ref={sectionRef} className={styles.timelineContainer}>
-      <div className={styles.contentWrapper}>
-        <div className={styles.timelineEyebrow}>
-          <span className={styles.timelineEyebrowLine} />
-          {t('gameTimeline')} <span className={styles.timelineEyebrowNumber}>— 05</span>
-        </div>
-        <h2 className={styles.timelineTitle}>
-          {t('careerMoves')}
-        </h2>
 
-        <div className={styles.progressContainer}>
-          <div className={styles.progressTrack}>
-            <div
-              ref={progressRef}
-              className={styles.progressFill}
-            />
-          </div>
-
-          <div className={styles.eventsGrid}>
-            {events.map((e, i) => (
-              <div key={e.key} className={`tl-item ${styles.timelineItem}`}>
-                <div
-                  className={`${styles.timelineDot} ${i === events.length - 1 ? styles.timelineDotActive : ''}`}
-                />
-                <div className={styles.eventDate}>
-                  {t(`${e.key}Date`)}
-                </div>
-                <div className={styles.eventRole}>{t(`${e.key}Role`)}</div>
-                <div className={styles.eventCompany}>{t(`${e.key}Company`)}</div>
-                <div className={styles.eventDesc}>{t(`${e.key}Desc`)}</div>
-              </div>
-            ))}
-          </div>
+      <div className={styles.header}>
+        <div className={styles.eyebrow}>
+          <span className={styles.eyebrowLine} />
+          {t('gameTimeline')}
+          <span className={styles.eyebrowNum}>— 05</span>
         </div>
+        <h2 className={styles.title}>{t('careerMoves')}</h2>
       </div>
+
+      <div className={styles.grid}>
+        {events.map((e, i) => {
+          const isCurrent = i === events.length - 1;
+          return (
+            <div
+              key={e.key}
+              className={`tl-card ${styles.card} ${isCurrent ? styles.cardCurrent : ''}`}
+            >
+              <div className={styles.cardHeader}>
+                <span className={styles.cardNum}>0{i + 1}</span>
+                {isCurrent && (
+                  <span className={styles.currentBadge}>
+                    <span className={styles.currentDot} aria-hidden="true" />
+                    Now
+                  </span>
+                )}
+              </div>
+
+              <div className={styles.cardDate}>{t(`${e.key}Date`)}</div>
+
+              <div className={styles.cardBody}>
+                <div className={styles.cardRole}>{t(`${e.key}Role`)}</div>
+                <div className={styles.cardCompany}>{t(`${e.key}Company`)}</div>
+              </div>
+
+              <p className={styles.cardDesc}>{t(`${e.key}Desc`)}</p>
+            </div>
+          );
+        })}
+      </div>
+
     </section>
   );
 }

@@ -1,0 +1,67 @@
+/* ── Strip wrapper ── */
+.strip {
+  overflow: hidden;
+  padding: 1.1rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.018);
+  /* fade edges */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+}
+
+/* ── Scrolling track ── */
+.track {
+  display: inline-flex;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.trackLeft {
+  animation: scrollLeft var(--duration, 28s) linear infinite;
+}
+
+.trackRight {
+  animation: scrollRight var(--duration, 28s) linear infinite;
+}
+
+@keyframes scrollLeft {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes scrollRight {
+  0%   { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+/* ── Items ── */
+.item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0 1.4rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.accent {
+  color: var(--color-cyan);
+  font-size: 0.6rem;
+  opacity: 0.7;
+}
