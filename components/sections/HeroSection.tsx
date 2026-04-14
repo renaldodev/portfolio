@@ -1,13 +1,10 @@
 'use client';
 
+import { gsap } from '@/lib/gsap';
 import { OPERA_GAME_FRAGMENT, OPERA_GAME_VERTEX } from '@/lib/shaders/operaGame';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
 import styles from './HeroSection.module.css';
-
-gsap.registerPlugin(ScrollTrigger);
 
 export default function HeroSection() {
   const tHero = useTranslations('hero');
@@ -17,30 +14,33 @@ export default function HeroSection() {
   const shaderCanvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const tl = gsap.timeline({ delay: 1.9 });
-    tl.fromTo(
-      '.hero-eyebrow',
-      { opacity: 0, y: 18 },
-      { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }
-    )
-      .fromTo(
-        '.hero-line',
-        { yPercent: 110, opacity: 0 },
-        { yPercent: 0, opacity: 1, stagger: 0.12, duration: 0.9, ease: 'power3.out' },
-        '-=0.4'
-      )
-      .fromTo(
-        '.hero-tagline',
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ delay: 1.9 });
+      tl.fromTo(
+        '.hero-eyebrow',
         { opacity: 0, y: 18 },
-        { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' },
-        '-=0.35'
+        { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }
       )
-      .fromTo(
-        '.hero-cta',
-        { opacity: 0, y: 16 },
-        { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' },
-        '-=0.3'
-      );
+        .fromTo(
+          '.hero-line',
+          { yPercent: 110, opacity: 0 },
+          { yPercent: 0, opacity: 1, stagger: 0.12, duration: 0.9, ease: 'power3.out' },
+          '-=0.4'
+        )
+        .fromTo(
+          '.hero-tagline',
+          { opacity: 0, y: 18 },
+          { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' },
+          '-=0.35'
+        )
+        .fromTo(
+          '.hero-cta',
+          { opacity: 0, y: 16 },
+          { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' },
+          '-=0.3'
+        );
+    }, sectionRef);
+    return () => ctx.revert();
   }, []);
 
   useEffect(() => {
@@ -52,6 +52,9 @@ export default function HeroSection() {
       antialias: false,
       alpha: true,
       premultipliedAlpha: false,
+      depth: false,
+      stencil: false,
+      preserveDrawingBuffer: false,
     });
     if (!gl) {
       console.warn(
@@ -99,7 +102,6 @@ export default function HeroSection() {
       gl.STATIC_DRAW
     );
 
-    let rafId = 0;
     const start = performance.now();
 
     const resize = () => {
@@ -129,15 +131,14 @@ export default function HeroSection() {
       gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
       gl.uniform1f(timeLocation, (performance.now() - start) * 0.001);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
-      rafId = window.requestAnimationFrame(render);
     };
 
-    render();
-    window.addEventListener('resize', resize);
+    gsap.ticker.add(render);
+    window.addEventListener('resize', resize, { passive: true });
 
     return () => {
       ro.disconnect();
-      window.cancelAnimationFrame(rafId);
+      gsap.ticker.remove(render);
       window.removeEventListener('resize', resize);
       gl.deleteBuffer(buffer);
       gl.deleteProgram(program);

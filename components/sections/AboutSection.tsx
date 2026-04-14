@@ -1,12 +1,9 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { gsap } from '@/lib/gsap';
 import { useTranslations } from 'next-intl';
+import { useEffect, useRef } from 'react';
 import styles from './AboutSection.module.css';
-
-gsap.registerPlugin(ScrollTrigger);
 
 export default function AboutSection() {
   const t = useTranslations('about');
@@ -44,16 +41,15 @@ export default function AboutSection() {
   }, []);
 
   const stats = [
-    { number: '3+',  label: tCommon('yearsExperience') },
+    { number: '3+', label: tCommon('yearsExperience') },
     { number: '20+', label: tCommon('projectsShipped') },
-    { number: '5+',  label: tCommon('techStacksMastered') },
-    { number: '∞',   label: tCommon('coffeeConsumed') },
+    { number: '5+', label: tCommon('techStacksMastered') },
+    { number: '∞', label: tCommon('coffeeConsumed') },
   ];
 
   return (
     <section id="about" ref={sectionRef} className={styles.aboutContainer}>
       <div className={styles.contentWrapper}>
-
         {/* ── Left: text ─────────────────────────────────────────── */}
         <div className="about-text">
           <div className={styles.aboutEyebrow}>
@@ -63,7 +59,8 @@ export default function AboutSection() {
           </div>
 
           <h2 className={styles.aboutTitle}>
-            {t('theMindBehind')}<br />
+            {t('theMindBehind')}
+            <br />
             <span className="gradient-text">{t('theMoves')}</span>
           </h2>
 
@@ -80,7 +77,6 @@ export default function AboutSection() {
             </div>
           ))}
         </div>
-
       </div>
     </section>
   );

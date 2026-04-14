@@ -1,4 +1,13 @@
 {
+  "seo": {
+    "title": "Renaldo – Engenheiro de Software Estratégico",
+    "description": "Portfólio de Renaldo, um Engenheiro de Software Estratégico especializado em backend, IA/automação e engenharia de frontend. Uma experiência de scrollytelling com tema de xadrez.",
+    "keywords": "portfólio, engenheiro de software, desenvolvedor, IA, backend, fullstack, React, Node.js, engenheiro estratégico, portfólio com tema de xadrez",
+    "ogTitle": "Renaldo – Engenheiro de Software Estratégico",
+    "ogDescription": "Uma experiência de portfólio com tema de xadrez nível Awwwards. Descubra sistemas que pensam.",
+    "twitterTitle": "Renaldo – Engenheiro de Software Estratégico",
+    "twitterDescription": "Engenheiro de Software Estratégico focado em backend, IA e frontends polidos."
+  },
   "common": {
     "yearsExperience": "Anos de experiência",
     "projectsShipped": "Projetos entregues",

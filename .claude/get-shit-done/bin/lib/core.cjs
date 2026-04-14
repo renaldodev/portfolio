@@ -228,7 +228,11 @@ function loadConfig(cwd) {
       const depthToGranularity = { quick: 'coarse', standard: 'standard', comprehensive: 'fine' };
       parsed.granularity = depthToGranularity[parsed.depth] || parsed.depth;
       delete parsed.depth;
-      try { fs.writeFileSync(configPath, JSON.stringify(parsed, null, 2), 'utf-8'); } catch { /* intentionally empty */ }
+      try {
+        fs.writeFileSync(configPath, JSON.stringify(parsed, null, 2), 'utf-8');
+      } catch {
+        /* intentionally empty */
+      }
     }
 
     // Auto-detect and sync sub_repos: scan for child directories with .git
@@ -261,7 +265,9 @@ function loadConfig(cwd) {
 
     // Persist sub_repos changes (migration or sync)
     if (configDirty) {
-      try { fs.writeFileSync(configPath, JSON.stringify(parsed, null, 2), 'utf-8'); } catch {}
+      try {
+        fs.writeFileSync(configPath, JSON.stringify(parsed, null, 2), 'utf-8');
+      } catch {}
     }
 
     const get = (key, nested) => {
@@ -290,21 +296,36 @@ function loadConfig(cwd) {
         if (isGitIgnored(cwd, '.planning/')) return false;
         return defaults.commit_docs;
       })(),
-      search_gitignored: get('search_gitignored', { section: 'planning', field: 'search_gitignored' }) ?? defaults.search_gitignored,
-      branching_strategy: get('branching_strategy', { section: 'git', field: 'branching_strategy' }) ?? defaults.branching_strategy,
-      phase_branch_template: get('phase_branch_template', { section: 'git', field: 'phase_branch_template' }) ?? defaults.phase_branch_template,
-      milestone_branch_template: get('milestone_branch_template', { section: 'git', field: 'milestone_branch_template' }) ?? defaults.milestone_branch_template,
-      quick_branch_template: get('quick_branch_template', { section: 'git', field: 'quick_branch_template' }) ?? defaults.quick_branch_template,
+      search_gitignored:
+        get('search_gitignored', { section: 'planning', field: 'search_gitignored' }) ??
+        defaults.search_gitignored,
+      branching_strategy:
+        get('branching_strategy', { section: 'git', field: 'branching_strategy' }) ??
+        defaults.branching_strategy,
+      phase_branch_template:
+        get('phase_branch_template', { section: 'git', field: 'phase_branch_template' }) ??
+        defaults.phase_branch_template,
+      milestone_branch_template:
+        get('milestone_branch_template', { section: 'git', field: 'milestone_branch_template' }) ??
+        defaults.milestone_branch_template,
+      quick_branch_template:
+        get('quick_branch_template', { section: 'git', field: 'quick_branch_template' }) ??
+        defaults.quick_branch_template,
       research: get('research', { section: 'workflow', field: 'research' }) ?? defaults.research,
-      plan_checker: get('plan_checker', { section: 'workflow', field: 'plan_check' }) ?? defaults.plan_checker,
+      plan_checker:
+        get('plan_checker', { section: 'workflow', field: 'plan_check' }) ?? defaults.plan_checker,
       verifier: get('verifier', { section: 'workflow', field: 'verifier' }) ?? defaults.verifier,
-      nyquist_validation: get('nyquist_validation', { section: 'workflow', field: 'nyquist_validation' }) ?? defaults.nyquist_validation,
+      nyquist_validation:
+        get('nyquist_validation', { section: 'workflow', field: 'nyquist_validation' }) ??
+        defaults.nyquist_validation,
       parallelization,
       brave_search: get('brave_search') ?? defaults.brave_search,
       firecrawl: get('firecrawl') ?? defaults.firecrawl,
       exa_search: get('exa_search') ?? defaults.exa_search,
-      text_mode: get('text_mode', { section: 'workflow', field: 'text_mode' }) ?? defaults.text_mode,
-      sub_repos: get('sub_repos', { section: 'planning', field: 'sub_repos' }) ?? defaults.sub_repos,
+      text_mode:
+        get('text_mode', { section: 'workflow', field: 'text_mode' }) ?? defaults.text_mode,
+      sub_repos:
+        get('sub_repos', { section: 'planning', field: 'sub_repos' }) ?? defaults.sub_repos,
       resolve_model_ids: get('resolve_model_ids') ?? defaults.resolve_model_ids,
       context_window: get('context_window') ?? defaults.context_window,
       phase_naming: get('phase_naming') ?? defaults.phase_naming,
@@ -375,9 +396,13 @@ function normalizeMd(content) {
     }
 
     // MD032: Blank line before lists (- item, * item, N. item, - [ ] item)
-    if (/^(\s*[-*+]\s|\s*\d+\.\s)/.test(line) && i > 0 &&
-        prevTrimmed !== '' && !/^(\s*[-*+]\s|\s*\d+\.\s)/.test(prev) &&
-        prevTrimmed !== '---') {
+    if (
+      /^(\s*[-*+]\s|\s*\d+\.\s)/.test(line) &&
+      i > 0 &&
+      prevTrimmed !== '' &&
+      !/^(\s*[-*+]\s|\s*\d+\.\s)/.test(prev) &&
+      prevTrimmed !== '---'
+    ) {
       result.push('');
     }
 
@@ -402,9 +427,12 @@ function normalizeMd(content) {
     // MD032: Blank line after last list item in a block
     if (/^(\s*[-*+]\s|\s*\d+\.\s)/.test(line) && i < lines.length - 1) {
       const next = lines[i + 1];
-      if (next !== undefined && next.trimEnd() !== '' &&
-          !/^(\s*[-*+]\s|\s*\d+\.\s)/.test(next) &&
-          !/^\s/.test(next)) {
+      if (
+        next !== undefined &&
+        next.trimEnd() !== '' &&
+        !/^(\s*[-*+]\s|\s*\d+\.\s)/.test(next) &&
+        !/^\s/.test(next)
+      ) {
         // Only add blank line if next line is not a continuation/indented line
         result.push('');
       }
@@ -499,22 +527,34 @@ function withPlanningLock(cwd, fn) {
   const start = Date.now();
 
   // Ensure .planning/ exists
-  try { fs.mkdirSync(planningDir(cwd), { recursive: true }); } catch { /* ok */ }
+  try {
+    fs.mkdirSync(planningDir(cwd), { recursive: true });
+  } catch {
+    /* ok */
+  }
 
   while (Date.now() - start < lockTimeout) {
     try {
       // Atomic create — fails if file exists
-      fs.writeFileSync(lockPath, JSON.stringify({
-        pid: process.pid,
-        cwd,
-        acquired: new Date().toISOString(),
-      }), { flag: 'wx' });
+      fs.writeFileSync(
+        lockPath,
+        JSON.stringify({
+          pid: process.pid,
+          cwd,
+          acquired: new Date().toISOString(),
+        }),
+        { flag: 'wx' }
+      );
 
       // Lock acquired — run the function
       try {
         return fn();
       } finally {
-        try { fs.unlinkSync(lockPath); } catch { /* already released */ }
+        try {
+          fs.unlinkSync(lockPath);
+        } catch {
+          /* already released */
+        }
       }
     } catch (err) {
       if (err.code === 'EEXIST') {
@@ -525,7 +565,9 @@ function withPlanningLock(cwd, fn) {
             fs.unlinkSync(lockPath);
             continue; // retry
           }
-        } catch { continue; }
+        } catch {
+          continue;
+        }
 
         // Wait and retry
         spawnSync('sleep', ['0.1'], { stdio: 'ignore' });
@@ -535,7 +577,11 @@ function withPlanningLock(cwd, fn) {
     }
   }
   // Timeout — force acquire (stale lock recovery)
-  try { fs.unlinkSync(lockPath); } catch { /* ok */ }
+  try {
+    fs.unlinkSync(lockPath);
+  } catch {
+    /* ok */
+  }
   return fn();
 }
 
@@ -602,7 +648,9 @@ function getActiveWorkstream(cwd) {
 function setActiveWorkstream(cwd, name) {
   const filePath = path.join(planningRoot(cwd), 'active-workstream');
   if (!name) {
-    try { fs.unlinkSync(filePath); } catch {}
+    try {
+      fs.unlinkSync(filePath);
+    } catch {}
     return;
   }
   if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
@@ -636,7 +684,7 @@ function comparePhaseNum(a, b) {
   const pb = String(b).match(/^(\d+)([A-Z])?((?:\.\d+)*)/i);
   // If either is non-numeric (custom ID), fall back to string comparison
   if (!pa || !pb) return String(a).localeCompare(String(b));
-  const intDiff = parseInt(pa[1], 10) - parseInt(pb[1], 10);
+  const intDiff = Number.parseInt(pa[1], 10) - Number.parseInt(pb[1], 10);
   if (intDiff !== 0) return intDiff;
   // No letter sorts before letter: 12 < 12A < 12B
   const la = (pa[2] || '').toUpperCase();
@@ -647,8 +695,18 @@ function comparePhaseNum(a, b) {
     return la < lb ? -1 : 1;
   }
   // Segment-by-segment decimal comparison: 12A < 12A.1 < 12A.1.2 < 12A.2
-  const aDecParts = pa[3] ? pa[3].slice(1).split('.').map(p => parseInt(p, 10)) : [];
-  const bDecParts = pb[3] ? pb[3].slice(1).split('.').map(p => parseInt(p, 10)) : [];
+  const aDecParts = pa[3]
+    ? pa[3]
+        .slice(1)
+        .split('.')
+        .map((p) => Number.parseInt(p, 10))
+    : [];
+  const bDecParts = pb[3]
+    ? pb[3]
+        .slice(1)
+        .split('.')
+        .map((p) => Number.parseInt(p, 10))
+    : [];
   const maxLen = Math.max(aDecParts.length, bDecParts.length);
   if (aDecParts.length === 0 && bDecParts.length > 0) return -1;
   if (bDecParts.length === 0 && aDecParts.length > 0) return 1;
@@ -664,7 +722,7 @@ function searchPhaseInDir(baseDir, relBase, normalized) {
   try {
     const dirs = readSubdirectories(baseDir, true);
     // Match: starts with normalized (numeric) OR contains normalized as prefix segment (custom ID)
-    const match = dirs.find(d => {
+    const match = dirs.find((d) => {
       if (d.startsWith(normalized)) return true;
       // For custom IDs like PROJ-42, match case-insensitively
       if (d.toUpperCase().startsWith(normalized.toUpperCase())) return true;
@@ -673,20 +731,26 @@ function searchPhaseInDir(baseDir, relBase, normalized) {
     if (!match) return null;
 
     // Extract phase number and name — supports both numeric (01-name) and custom (PROJ-42-name)
-    const dirMatch = match.match(/^(\d+[A-Z]?(?:\.\d+)*)-?(.*)/i)
-      || match.match(/^([A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*)-(.+)/i)
-      || [null, match, null];
+    const dirMatch = match.match(/^(\d+[A-Z]?(?:\.\d+)*)-?(.*)/i) ||
+      match.match(/^([A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*)-(.+)/i) || [null, match, null];
     const phaseNumber = dirMatch ? dirMatch[1] : normalized;
     const phaseName = dirMatch && dirMatch[2] ? dirMatch[2] : null;
     const phaseDir = path.join(baseDir, match);
-    const { plans: unsortedPlans, summaries: unsortedSummaries, hasResearch, hasContext, hasVerification, hasReviews } = getPhaseFileStats(phaseDir);
+    const {
+      plans: unsortedPlans,
+      summaries: unsortedSummaries,
+      hasResearch,
+      hasContext,
+      hasVerification,
+      hasReviews,
+    } = getPhaseFileStats(phaseDir);
     const plans = unsortedPlans.sort();
     const summaries = unsortedSummaries.sort();
 
     const completedPlanIds = new Set(
-      summaries.map(s => s.replace('-SUMMARY.md', '').replace('SUMMARY.md', ''))
+      summaries.map((s) => s.replace('-SUMMARY.md', '').replace('SUMMARY.md', ''))
     );
-    const incompletePlans = plans.filter(p => {
+    const incompletePlans = plans.filter((p) => {
       const planId = p.replace('-PLAN.md', '').replace('PLAN.md', '');
       return !completedPlanIds.has(planId);
     });
@@ -696,7 +760,12 @@ function searchPhaseInDir(baseDir, relBase, normalized) {
       directory: toPosixPath(path.join(relBase, match)),
       phase_number: phaseNumber,
       phase_name: phaseName,
-      phase_slug: phaseName ? phaseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') : null,
+      phase_slug: phaseName
+        ? phaseName
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+        : null,
       plans,
       summaries,
       incomplete_plans: incompletePlans,
@@ -728,8 +797,8 @@ function findPhaseInternal(cwd, phase) {
   try {
     const milestoneEntries = fs.readdirSync(milestonesDir, { withFileTypes: true });
     const archiveDirs = milestoneEntries
-      .filter(e => e.isDirectory() && /^v[\d.]+-phases$/.test(e.name))
-      .map(e => e.name)
+      .filter((e) => e.isDirectory() && /^v[\d.]+-phases$/.test(e.name))
+      .map((e) => e.name)
       .sort()
       .reverse();
 
@@ -743,7 +812,9 @@ function findPhaseInternal(cwd, phase) {
         return result;
       }
     }
-  } catch { /* intentionally empty */ }
+  } catch {
+    /* intentionally empty */
+  }
 
   return null;
 }
@@ -758,8 +829,8 @@ function getArchivedPhaseDirs(cwd) {
     const milestoneEntries = fs.readdirSync(milestonesDir, { withFileTypes: true });
     // Find v*-phases directories, sort newest first
     const phaseDirs = milestoneEntries
-      .filter(e => e.isDirectory() && /^v[\d.]+-phases$/.test(e.name))
-      .map(e => e.name)
+      .filter((e) => e.isDirectory() && /^v[\d.]+-phases$/.test(e.name))
+      .map((e) => e.name)
       .sort()
       .reverse();
 
@@ -777,7 +848,9 @@ function getArchivedPhaseDirs(cwd) {
         });
       }
     }
-  } catch { /* intentionally empty */ }
+  } catch {
+    /* intentionally empty */
+  }
 
   return results;
 }
@@ -840,10 +913,7 @@ function extractCurrentMilestone(content, cwd) {
   // 3. Find the section matching this version
   // Match headings like: ## Roadmap v3.0: Name, ## v3.0 Name, etc.
   const escapedVersion = escapeRegex(version);
-  const sectionPattern = new RegExp(
-    `(^#{1,3}\\s+.*${escapedVersion}[^\\n]*)`,
-    'mi'
-  );
+  const sectionPattern = new RegExp(`(^#{1,3}\\s+.*${escapedVersion}[^\\n]*)`, 'mi');
   const sectionMatch = content.match(sectionPattern);
 
   if (!sectionMatch) return stripShippedMilestones(content);
@@ -992,9 +1062,9 @@ function checkAgentsInstalled() {
  * Users can override with model_overrides in config.json for custom/latest models.
  */
 const MODEL_ALIAS_MAP = {
-  'opus': 'claude-opus-4-0',
-  'sonnet': 'claude-sonnet-4-5',
-  'haiku': 'claude-haiku-3-5',
+  opus: 'claude-opus-4-0',
+  sonnet: 'claude-sonnet-4-5',
+  haiku: 'claude-haiku-3-5',
 };
 
 function resolveModelInternal(cwd, agentType) {
@@ -1061,7 +1131,10 @@ function pathExistsInternal(cwd, targetPath) {
 
 function generateSlugInternal(text) {
   if (!text) return null;
-  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 function getMilestoneInfo(cwd) {
@@ -1109,14 +1182,19 @@ function getMilestoneInfo(cwd) {
 function getMilestonePhaseFilter(cwd) {
   const milestonePhaseNums = new Set();
   try {
-    const roadmap = extractCurrentMilestone(fs.readFileSync(path.join(planningDir(cwd), 'ROADMAP.md'), 'utf-8'), cwd);
+    const roadmap = extractCurrentMilestone(
+      fs.readFileSync(path.join(planningDir(cwd), 'ROADMAP.md'), 'utf-8'),
+      cwd
+    );
     // Match both numeric phases (Phase 1:) and custom IDs (Phase PROJ-42:)
     const phasePattern = /#{2,4}\s*Phase\s+([\w][\w.-]*)\s*:/gi;
     let m;
     while ((m = phasePattern.exec(roadmap)) !== null) {
       milestonePhaseNums.add(m[1]);
     }
-  } catch { /* intentionally empty */ }
+  } catch {
+    /* intentionally empty */
+  }
 
   if (milestonePhaseNums.size === 0) {
     const passAll = () => true;
@@ -1125,7 +1203,7 @@ function getMilestonePhaseFilter(cwd) {
   }
 
   const normalized = new Set(
-    [...milestonePhaseNums].map(n => (n.replace(/^0+/, '') || '0').toLowerCase())
+    [...milestonePhaseNums].map((n) => (n.replace(/^0+/, '') || '0').toLowerCase())
   );
 
   function isDirInMilestone(dirName) {
@@ -1145,12 +1223,12 @@ function getMilestonePhaseFilter(cwd) {
 
 /** Filter a file list to just PLAN.md / *-PLAN.md entries. */
 function filterPlanFiles(files) {
-  return files.filter(f => f.endsWith('-PLAN.md') || f === 'PLAN.md');
+  return files.filter((f) => f.endsWith('-PLAN.md') || f === 'PLAN.md');
 }
 
 /** Filter a file list to just SUMMARY.md / *-SUMMARY.md entries. */
 function filterSummaryFiles(files) {
-  return files.filter(f => f.endsWith('-SUMMARY.md') || f === 'SUMMARY.md');
+  return files.filter((f) => f.endsWith('-SUMMARY.md') || f === 'SUMMARY.md');
 }
 
 /**
@@ -1163,10 +1241,10 @@ function getPhaseFileStats(phaseDir) {
   return {
     plans: filterPlanFiles(files),
     summaries: filterSummaryFiles(files),
-    hasResearch: files.some(f => f.endsWith('-RESEARCH.md') || f === 'RESEARCH.md'),
-    hasContext: files.some(f => f.endsWith('-CONTEXT.md') || f === 'CONTEXT.md'),
-    hasVerification: files.some(f => f.endsWith('-VERIFICATION.md') || f === 'VERIFICATION.md'),
-    hasReviews: files.some(f => f.endsWith('-REVIEWS.md') || f === 'REVIEWS.md'),
+    hasResearch: files.some((f) => f.endsWith('-RESEARCH.md') || f === 'RESEARCH.md'),
+    hasContext: files.some((f) => f.endsWith('-CONTEXT.md') || f === 'CONTEXT.md'),
+    hasVerification: files.some((f) => f.endsWith('-VERIFICATION.md') || f === 'VERIFICATION.md'),
+    hasReviews: files.some((f) => f.endsWith('-REVIEWS.md') || f === 'REVIEWS.md'),
   };
 }
 
@@ -1178,7 +1256,7 @@ function getPhaseFileStats(phaseDir) {
 function readSubdirectories(dirPath, sort = false) {
   try {
     const entries = fs.readdirSync(dirPath, { withFileTypes: true });
-    const dirs = entries.filter(e => e.isDirectory()).map(e => e.name);
+    const dirs = entries.filter((e) => e.isDirectory()).map((e) => e.name);
     return sort ? dirs.sort((a, b) => comparePhaseNum(a, b)) : dirs;
   } catch {
     return [];

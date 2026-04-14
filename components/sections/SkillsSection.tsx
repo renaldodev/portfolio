@@ -1,12 +1,9 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { gsap } from '@/lib/gsap';
 import { useTranslations } from 'next-intl';
+import { useEffect, useRef } from 'react';
 import styles from './SkillsSection.module.css';
-
-gsap.registerPlugin(ScrollTrigger);
 
 const groups = [
   {
@@ -84,9 +81,7 @@ export default function SkillsSection() {
           {t('piecesPatterns')}
           <span className={styles.eyebrowNum}>— 03</span>
         </div>
-        <h2 className={styles.sectionTitle}>
-          {t('myArsenal')}
-        </h2>
+        <h2 className={styles.sectionTitle}>{t('myArsenal')}</h2>
       </div>
 
       {/* Skill groups */}
@@ -96,7 +91,9 @@ export default function SkillsSection() {
             {/* Row header */}
             <div className={styles.groupHeader}>
               <div className={styles.groupHeaderLeft}>
-                <span className={styles.groupPiece} style={{ color: g.color }}>{g.piece}</span>
+                <span className={styles.groupPiece} style={{ color: g.color }}>
+                  {g.piece}
+                </span>
                 <span className={styles.groupLabel} style={{ color: g.color }}>
                   {t(g.translationKey)}
                 </span>
@@ -108,10 +105,7 @@ export default function SkillsSection() {
             </div>
 
             {/* Huge display word */}
-            <div
-              className={styles.displayWord}
-              style={{ color: g.color }}
-            >
+            <div className={styles.displayWord} style={{ color: g.color }}>
               {g.displayWord}
             </div>
 
@@ -128,7 +122,9 @@ export default function SkillsSection() {
             </div>
 
             {/* Background decorative piece */}
-            <span className={styles.bgPiece} aria-hidden="true">{g.piece}</span>
+            <span className={styles.bgPiece} aria-hidden="true">
+              {g.piece}
+            </span>
           </div>
         ))}
         {/* Final border */}

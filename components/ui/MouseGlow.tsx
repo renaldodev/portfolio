@@ -1,5 +1,6 @@
 'use client';
 
+import { gsap } from 'gsap';
 import { useEffect, useRef } from 'react';
 import styles from './MouseGlow.module.css';
 
@@ -13,7 +14,7 @@ void main() {
 
 // ── Fragment shader: organic radial glow with animated color cycling ─────────
 const FRAG = `
-precision highp float;
+precision mediump float;
 
 uniform vec2  u_res;
 uniform vec2  u_mouse;
@@ -87,11 +88,7 @@ void main() {
 `;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-function compileShader(
-  gl: WebGLRenderingContext,
-  type: number,
-  src: string
-): WebGLShader | null {
+function compileShader(gl: WebGLRenderingContext, type: number, src: string): WebGLShader | null {
   const shader = gl.createShader(type);
   if (!shader) return null;
   gl.shaderSource(shader, src);
@@ -155,27 +152,23 @@ export default function MouseGlow() {
     // fullscreen triangle-strip quad: (-1,-1) (1,-1) (-1,1) (1,1)
     const buf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array([-1, -1,  1, -1,  -1, 1,  1, 1]),
-      gl.STATIC_DRAW
-    );
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
 
     const posLoc = gl.getAttribLocation(program, 'a_pos');
     gl.enableVertexAttribArray(posLoc);
     gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
 
     // uniform locations
-    const uRes   = gl.getUniformLocation(program, 'u_res');
+    const uRes = gl.getUniformLocation(program, 'u_res');
     const uMouse = gl.getUniformLocation(program, 'u_mouse');
-    const uTime  = gl.getUniformLocation(program, 'u_time');
+    const uTime = gl.getUniformLocation(program, 'u_time');
 
     // alpha blending
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     // ── mouse tracking with smooth lerp ──
-    const mouse  = { x: 0.5, y: 0.5 };
+    const mouse = { x: 0.5, y: 0.5 };
     const target = { x: -2.0, y: -2.0 }; // start off-screen
 
     const onMouseMove = (e: MouseEvent) => {
@@ -190,49 +183,46 @@ export default function MouseGlow() {
       target.y = -2.0;
     };
 
-    window.addEventListener('mousemove', onMouseMove);
-    document.documentElement.addEventListener('mouseleave', onMouseLeave);
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
+    document.documentElement.addEventListener('mouseleave', onMouseLeave, { passive: true });
 
     // ── resize handler ── (render at 0.5× for perf; CSS stretches it)
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio, 2);
-      canvas.width  = Math.floor(window.innerWidth  * dpr * 0.5);
+      canvas.width = Math.floor(window.innerWidth * dpr * 0.5);
       canvas.height = Math.floor(window.innerHeight * dpr * 0.5);
       gl.viewport(0, 0, canvas.width, canvas.height);
     };
 
     resize();
-    window.addEventListener('resize', resize);
+    window.addEventListener('resize', resize, { passive: true });
 
     // ── render loop ──
-    let rafId = 0;
     const start = performance.now();
 
-    const render = () => {
-      rafId = requestAnimationFrame(render);
-
-      // lerp mouse toward target
-      const lerpFactor = 0.075;
-      mouse.x += (target.x - mouse.x) * lerpFactor;
-      mouse.y += (target.y - mouse.y) * lerpFactor;
+    const ticker = () => {
+      // lerp mouse toward target using ticker deltaRatio
+      const dt = 1.0 - (1.0 - 0.075) ** gsap.ticker.deltaRatio();
+      mouse.x += (target.x - mouse.x) * dt;
+      mouse.y += (target.y - mouse.y) * dt;
 
       const elapsed = (performance.now() - start) / 1000;
 
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
 
-      gl.uniform2f(uRes,   canvas.width, canvas.height);
+      gl.uniform2f(uRes, canvas.width, canvas.height);
       gl.uniform2f(uMouse, mouse.x, mouse.y);
-      gl.uniform1f(uTime,  elapsed);
+      gl.uniform1f(uTime, elapsed);
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     };
 
-    render();
+    gsap.ticker.add(ticker);
 
     // ── cleanup ──
     return () => {
-      cancelAnimationFrame(rafId);
+      gsap.ticker.remove(ticker);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('resize', resize);
       document.documentElement.removeEventListener('mouseleave', onMouseLeave);

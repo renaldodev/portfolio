@@ -1,19 +1,11 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { gsap } from '@/lib/gsap';
 import { useTranslations } from 'next-intl';
+import { useEffect, useRef } from 'react';
 import styles from './TimelineSection.module.css';
 
-gsap.registerPlugin(ScrollTrigger);
-
-const events = [
-  { key: 'e1' },
-  { key: 'e2' },
-  { key: 'e3' },
-  { key: 'e4' },
-];
+const events = [{ key: 'e1' }, { key: 'e2' }, { key: 'e3' }, { key: 'e4' }];
 
 export default function TimelineSection() {
   const t = useTranslations('timeline');
@@ -39,7 +31,6 @@ export default function TimelineSection() {
 
   return (
     <section id="timeline" ref={sectionRef} className={styles.timelineContainer}>
-
       <div className={styles.header}>
         <div className={styles.eyebrow}>
           <span className={styles.eyebrowLine} />
@@ -79,7 +70,6 @@ export default function TimelineSection() {
           );
         })}
       </div>
-
     </section>
   );
 }

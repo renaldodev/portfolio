@@ -122,7 +122,7 @@
   letter-spacing: -0.035em;
   line-height: 0.92;
   margin-bottom: 1.5rem;
-  opacity: 0;           /* animated in by GSAP */
+  opacity: 0; /* animated in by GSAP */
   will-change: transform, opacity;
   /* subtle gradient on the color */
   -webkit-text-stroke: 1px currentColor;
@@ -156,7 +156,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  opacity: 0;  /* animated in */
+  opacity: 0; /* animated in */
 }
 
 .skillTag {

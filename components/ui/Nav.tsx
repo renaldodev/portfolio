@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { gsap } from 'gsap';
+import { gsap } from '@/lib/gsap';
 import { useTranslations } from 'next-intl';
+import { useEffect, useRef, useState } from 'react';
 import LanguageSwitcher from './LanguageSwitcher';
-import ThemeToggle from './ThemeToggle';
 import styles from './Nav.module.css';
+import ThemeToggle from './ThemeToggle';
 
 const SECTION_IDS = ['hero', 'about', 'skills', 'projects', 'timeline', 'contact'];
 
@@ -42,7 +42,9 @@ export default function Nav() {
   // ── Lock body scroll when menu open ─────────────────────────────────────────
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [menuOpen]);
 
   // ── Entry animation ──────────────────────────────────────────────────────────
@@ -55,11 +57,11 @@ export default function Nav() {
   }, []);
 
   const links = [
-    { label: t('about'),    href: '#about',    idx: 1 },
-    { label: t('skills'),   href: '#skills',   idx: 2 },
+    { label: t('about'), href: '#about', idx: 1 },
+    { label: t('skills'), href: '#skills', idx: 2 },
     { label: t('projects'), href: '#projects', idx: 3 },
     { label: t('timeline'), href: '#timeline', idx: 4 },
-    { label: t('contact'),  href: '#contact',  idx: 5 },
+    { label: t('contact'), href: '#contact', idx: 5 },
   ];
 
   const scrollTo = (href: string) => {
@@ -82,29 +84,28 @@ export default function Nav() {
         ref={navRef}
         style={{ opacity: 0 }}
         className={`${styles.nav} ${scrolled ? styles.navScrolled : ''}`}
+        aria-hidden={menuOpen}
       >
         {/* Logo */}
-        <button
-          type="button"
-          onClick={() => scrollTo('#hero')}
-          className={styles.logo}
-        >
+        <button type="button" onClick={() => scrollTo('#hero')} className={styles.logo}>
           <span className={styles.logoPiece}>♔</span>
           {t('logo')}
         </button>
 
         {/* Centre links – desktop */}
         <ul className={styles.links}>
-          {links.map(l => (
+          {links.map((l) => (
             <li key={l.href}>
               <a
                 href={l.href}
-                onClick={e => handleClick(e, l.href)}
+                onClick={(e) => handleClick(e, l.href)}
                 className={`${styles.link} ${activeIndex === l.idx ? styles.linkActive : ''}`}
               >
                 <span className={styles.linkInner}>
                   <span className={styles.linkTop}>{l.label}</span>
-                  <span className={styles.linkBottom} aria-hidden="true">{l.label}</span>
+                  <span className={styles.linkBottom} aria-hidden="true">
+                    {l.label}
+                  </span>
                 </span>
               </a>
             </li>
@@ -126,7 +127,10 @@ export default function Nav() {
           {/* CTA pill */}
           <button
             type="button"
-            onClick={() => { setMenuOpen(false); scrollTo('#contact'); }}
+            onClick={() => {
+              setMenuOpen(false);
+              scrollTo('#contact');
+            }}
             className={styles.cta}
           >
             Let&apos;s Talk
@@ -137,7 +141,7 @@ export default function Nav() {
           <button
             type="button"
             className={`${styles.hamburger} ${menuOpen ? styles.hamburgerOpen : ''}`}
-            onClick={() => setMenuOpen(prev => !prev)}
+            onClick={() => setMenuOpen((prev) => !prev)}
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
           >
@@ -161,7 +165,7 @@ export default function Nav() {
             >
               <a
                 href={l.href}
-                onClick={e => handleClick(e, l.href)}
+                onClick={(e) => handleClick(e, l.href)}
                 className={styles.overlayLink}
               >
                 <span className={styles.overlayNum}>0{l.idx}</span>

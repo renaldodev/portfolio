@@ -1,4 +1,13 @@
 {
+  "seo": {
+    "title": "Renaldo – Strategic Software Engineer",
+    "description": "Portfolio of Renaldo, a Strategic Software Engineer specializing in backend, AI/automation, and frontend engineering. Chess-themed scrollytelling experience.",
+    "keywords": "portfolio, software engineer, developer, AI, backend, fullstack, React, Node.js, strategic engineer, chess-themed portfolio",
+    "ogTitle": "Renaldo – Strategic Software Engineer",
+    "ogDescription": "An Awwwards-level chess-themed portfolio experience. Discover systems that think.",
+    "twitterTitle": "Renaldo – Strategic Software Engineer",
+    "twitterDescription": "Strategic Software Engineer focusing on backend, AI, and polished frontends."
+  },
   "common": {
     "yearsExperience": "Years of experience",
     "projectsShipped": "Projects shipped",

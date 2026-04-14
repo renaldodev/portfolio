@@ -17,7 +17,9 @@ export default function LanguageSwitcher() {
     // Get current path without locale prefix
     const pathname = window.location.pathname;
     // Replace locale in path or add if missing
-    const newPath = pathname.replace(/^\/(en|pt)/, `/${otherLocale}`).replace(/^\/$/, `/${otherLocale}`);
+    const newPath = pathname
+      .replace(/^\/(en|pt)/, `/${otherLocale}`)
+      .replace(/^\/$/, `/${otherLocale}`);
     router.replace(newPath);
   };
 

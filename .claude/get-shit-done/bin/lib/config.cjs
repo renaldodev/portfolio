@@ -12,18 +12,35 @@ const {
 } = require('./model-profiles.cjs');
 
 const VALID_CONFIG_KEYS = new Set([
-  'mode', 'granularity', 'parallelization', 'commit_docs', 'model_profile',
-  'search_gitignored', 'brave_search', 'firecrawl', 'exa_search',
-  'workflow.research', 'workflow.plan_check', 'workflow.verifier',
-  'workflow.nyquist_validation', 'workflow.ui_phase', 'workflow.ui_safety_gate',
-  'workflow.auto_advance', 'workflow.node_repair', 'workflow.node_repair_budget',
+  'mode',
+  'granularity',
+  'parallelization',
+  'commit_docs',
+  'model_profile',
+  'search_gitignored',
+  'brave_search',
+  'firecrawl',
+  'exa_search',
+  'workflow.research',
+  'workflow.plan_check',
+  'workflow.verifier',
+  'workflow.nyquist_validation',
+  'workflow.ui_phase',
+  'workflow.ui_safety_gate',
+  'workflow.auto_advance',
+  'workflow.node_repair',
+  'workflow.node_repair_budget',
   'workflow.text_mode',
   'workflow.research_before_questions',
   'workflow.discuss_mode',
   'workflow.skip_discuss',
   'workflow._auto_chain_active',
-  'git.branching_strategy', 'git.phase_branch_template', 'git.milestone_branch_template', 'git.quick_branch_template',
-  'planning.commit_docs', 'planning.search_gitignored',
+  'git.branching_strategy',
+  'git.phase_branch_template',
+  'git.milestone_branch_template',
+  'git.quick_branch_template',
+  'planning.commit_docs',
+  'planning.search_gitignored',
   'hooks.context_warnings',
 ]);
 
@@ -93,7 +110,9 @@ function buildNewProjectConfig(userChoices) {
         delete userDefaults.depth;
         try {
           fs.writeFileSync(globalDefaultsPath, JSON.stringify(userDefaults, null, 2), 'utf-8');
-        } catch { /* intentionally empty */ }
+        } catch {
+          /* intentionally empty */
+        }
       }
     }
   } catch {
@@ -317,7 +336,9 @@ function cmdConfigSet(cwd, keyPath, value, raw) {
   validateKnownConfigKeyPath(keyPath);
 
   if (!isValidConfigKey(keyPath)) {
-    error(`Unknown config key: "${keyPath}". Valid keys: ${[...VALID_CONFIG_KEYS].sort().join(', ')}, agent_skills.<agent-type>`);
+    error(
+      `Unknown config key: "${keyPath}". Valid keys: ${[...VALID_CONFIG_KEYS].sort().join(', ')}, agent_skills.<agent-type>`
+    );
   }
 
   // Parse value (handle booleans, numbers, and JSON arrays/objects)
@@ -326,7 +347,11 @@ function cmdConfigSet(cwd, keyPath, value, raw) {
   else if (value === 'false') parsedValue = false;
   else if (!isNaN(value) && value !== '') parsedValue = Number(value);
   else if (typeof value === 'string' && (value.startsWith('[') || value.startsWith('{'))) {
-    try { parsedValue = JSON.parse(value); } catch { /* keep as string */ }
+    try {
+      parsedValue = JSON.parse(value);
+    } catch {
+      /* keep as string */
+    }
   }
 
   const setConfigValueResult = setConfigValue(cwd, keyPath, parsedValue);
